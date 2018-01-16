@@ -113,8 +113,8 @@ exports.getArtistByName = async function (ctx) {
  */
 
 exports.random = async function (ctx) {
-  let n = ctx.session.randomized || 0;
-  ctx.session.randomized = ++n;
+  let n = 15;
+  //ctx.session.randomized = ++n;
   let condition = {};
   if (n < 4) {
     condition = {mark: {$gt: 4}};

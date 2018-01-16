@@ -1,5 +1,6 @@
 const router = require('koa-router')();
 const checkAdmin = require('./middlewares/checkAdmin');
+const loadUser = require('./middlewares/loadUser');
 
 // Home
 router.get('', require('./controllers/home/homeCtrl').index);

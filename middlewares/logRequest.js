@@ -10,7 +10,7 @@ module.exports = async function (ctx, next) {
   let request = new Request({
     url: ctx.request.url,
     body: ctx.request.body,
-    user: ctx.request.user ? ctx.request.user._doc.username : null,
+    user: ctx.request.user ? ctx.request.user.username : null,
     session: ctx.sessionId,
     ip: ctx.request.headers['x-real-ip'] || ctx.request.ip,
     agent: ctx.request.headers['user-agent'],
