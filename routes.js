@@ -35,7 +35,7 @@ router.get('music/artists', require('./controllers/music/musicCtrl').artists);
 router.get('music/artists/:library/:name', require('./controllers/music/musicCtrl').getArtistByName);
 router.get('music/search', require('./controllers/music/musicCtrl').search);
 router.get('music/random', require('./controllers/music/musicCtrl').random);
-router.get('music/songs', require('./controllers/music/musicCtrl').byhref);
+router.get('music/songs', require('./controllers/music/musicCtrl').bySrc);
 router.post('music/extract', checkAdmin, require('./controllers/music/musicCtrl').extract);
 router.delete('music/songs', checkAdmin, require('./controllers/music/musicCtrl').dropSongs);
 

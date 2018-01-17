@@ -18,7 +18,7 @@ exports.search = async function (ctx) {
   ctx.body = {data: filteredSongs};
 };
 
-exports.byhref = async function (ctx) {
+exports.bySrc = async function (ctx) {
   let href = ctx.request.query.href;
   const song = await musicService.searchTrackByHref(href);
   ctx.body = {data: song};

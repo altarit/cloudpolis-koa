@@ -140,7 +140,7 @@ async function lookInside(root, dir, fromroot, depth, library) {
         }
 
         let metadata = await getTags(fullpath)
-        metadata.href = '/' + library + (fromroot + el).replace(/%/g, '%25').replace(/ /g, '%20')
+        metadata.src = '/' + library + (fromroot + el).replace(/%/g, '%25').replace(/ /g, '%20')
         if (!metadata.artist) {
           errors.emptyArtist.push(fromroot + el)
           metadata.artist = fromroot.substring(1, fromroot.indexOf('/', 2))
@@ -153,6 +153,7 @@ async function lookInside(root, dir, fromroot, depth, library) {
           metadata.album = dir
         }
         metadata.library = library
+        metadata.search = metadata.title.toLowerCase();
 
         console.log(metadata)
 
