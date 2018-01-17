@@ -1,7 +1,7 @@
 module.exports = {
   "port": 3002,
   "jwt": {
-    "secret": 'PinkieSwear'
+    "secret": "PinkieSwear"
   },
   "mongoose": {
     "host": "127.0.0.1",

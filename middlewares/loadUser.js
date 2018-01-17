@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('services/authService');
 
 module.exports = async function (ctx, next) {
   const token = ctx.headers['auth'];
   if (token) {
-    const decoded = jwt.verify(token, 'shhhhh');
+    const decoded = jwtUtils.verify(token);
     if (decoded && decoded.username) {
       ctx.request.user = decoded
     }

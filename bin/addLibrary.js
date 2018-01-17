@@ -28,7 +28,7 @@ const options = {
   insert: true,
   logMusic: true,
   libraries: {
-    "mlpfa": "D:\\Documents\\Music\\MAv16\\Artists"
+    "Artists": "D:\\Documents\\Music\\MAv16\\Artists"
   },
   remove: false
 }

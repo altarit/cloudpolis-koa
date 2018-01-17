@@ -193,11 +193,11 @@ function getNameFromFullPath(fullPath) {
 
 
 exports.random = async function (condition, max) {
-  var count = await Song.count(condition);
-  var start = Math.floor(Math.random() * count - max);
+  const count = await Song.count(condition);
+  let start = Math.floor(Math.random() * count - max);
   start = start < 0 ? 0 : start;
   console.log('s: ' + start + '  m: ' + max);
-  var result = await Song.find(condition).sort({rand: 1}).skip(start).limit(max).exec();
+  const result = await Song.find(condition).sort({rand: 1}).skip(start).limit(max).exec();
   return result;
 };
 
@@ -206,6 +206,29 @@ exports.dropSongs = async function () {
   if (songs) songs.drop();
   const compilations = mongoose.connection.collections['compilations'];
   if (compilations) compilations.drop();
+};
+
+exports.extract = async function () {
+  const allCompilations = await Compilation.find({});
+  return Promise.all(allCompilations.map((currentCompilation) => {
+    console.log(currentCompilation.name);
+    return Promise.all(currentCompilation.songs.map(function (currentSong) {
+      const newSong = new Song({
+        href: currentSong.href,
+        title: currentSong.title,
+        artist: currentSong.artist,
+        album: currentSong.album,
+        compilation: currentCompilation.name,
+        duration: currentSong.duration,
+        size: currentSong.size,
+        mark: currentSong.mark,
+        search: currentSong.search,
+        rand: Math.floor(Math.random()*10000)
+      });
+      console.log(' - ' + currentSong.title);
+      return newSong.save();
+    }));
+  }));
 };
 
 exports.addToStat = async function (title, compilation) {

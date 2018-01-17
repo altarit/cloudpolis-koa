@@ -2,7 +2,7 @@ const HttpError = require('lib/error').HttpError;
 const AuthError = require('lib/error/AuthError').AuthError;
 const log = require('lib/log')(module);
 const UserService = require('services/userService');
-const jwt = require('jsonwebtoken');
+const jwtUtils = require('services/authService');
 
 exports.auth = async function (ctx, next) {
   console.log('!!! auth !!!')
@@ -17,11 +17,11 @@ exports.auth = async function (ctx, next) {
     let user = registration
       ? await UserService.register(username, password, email, additional)
       : await UserService.authorize(username, password);
-    const token = jwt.sign({
+    const token = jwtUtils.sign({
       username: user.username,
       id: user._id,
       email: user.email
-    }, 'shhhhh');
+    });
     ctx.set("Auth", token);
     ctx.body = {data: user.username};
   } catch (err) {
