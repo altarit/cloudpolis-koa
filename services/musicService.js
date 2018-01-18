@@ -193,7 +193,7 @@ function getNameFromFullPath(fullPath) {
 
 
 exports.random = async function (condition, max) {
-  log.debug(`Handling /random`)
+  log.debug(`Handling /random max=${max}`)
   const count = await Song.count(condition);
   let start = Math.floor(Math.random() * count - max);
   start = start < 0 ? 0 : start;

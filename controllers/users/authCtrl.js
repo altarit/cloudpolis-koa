@@ -26,7 +26,7 @@ exports.auth = async function (ctx, next) {
     ctx.body = {data: user.username};
   } catch (err) {
     if (err instanceof AuthError) {
-      throw new HttpError(403, err.message);
+      throw new HttpError(401, err.message);
     } else {
       throw err;
     }
@@ -34,10 +34,16 @@ exports.auth = async function (ctx, next) {
 };
 
 exports.check = async function (ctx, next) {
-  if (ctx.request.user)
-    ctx.body = {data: ctx.request.username};
-  else
-    ctx.body = {data: null};
+  if (ctx.request.user) {
+    const username = ctx.request.user.username
+    const token = jwtUtils.sign({
+      username: username
+    });
+    ctx.set("Auth", token);
+    ctx.body = {data: username};
+  } else {
+    throw new HttpError(401, 'Not authorized');
+  }
 };
 
 exports.logout = async function (ctx, next) {
