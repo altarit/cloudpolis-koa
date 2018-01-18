@@ -35,13 +35,21 @@ exports.getPlaylistDetails = async function (owner, name) {
 };
 
 exports.updatePlaylist = async function (owner, name, tracks) {
-  const playlist = new Playlist({
-    owner: owner,
-    name: name,
-    tracks: tracks
-  });
-  let result = await playlist.save();
-  return result;
+  let found = await Playlist.find({owner: owner, name: name});
+  if (found.length) {
+    let playlist = found[0]
+    playlist.tracks = tracks;
+    let result = await playlist.save();
+    return result;
+  } else {
+    let playlist = new Playlist({
+      owner: owner,
+      name: name,
+      tracks: tracks
+    });
+    let result = await playlist.save();
+    return result;
+  }
 };
 
 exports.deletePlaylist = async function (owner, name) {

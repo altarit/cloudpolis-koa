@@ -48,7 +48,7 @@ function extractSongs(callback) {
       console.log(currentCompilation.name);
       async.each(currentCompilation.songs, function (currentSong) {
         var newSong = new Song({
-          href: currentSong.href,
+          src: currentSong.src,
           title: currentSong.title,
           artist: currentSong.artist,
           album: currentSong.album,

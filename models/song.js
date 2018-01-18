@@ -19,7 +19,7 @@ var schema = new mongoose.Schema({
   album: {
     type: String
   },
-  href: {
+  src: {
     type: String,
     requred: true,
     unique: true
