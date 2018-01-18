@@ -1,10 +1,14 @@
 module.exports = {
   "port": 3002,
-  "session": {
-    "secret": 'PinkieSwear'
+  "jwt": {
+    "secret": "PinkieSwear"
   },
   "mongoose": {
-    "uri": "mongodb://localhost/Equestria",
+    "host": "127.0.0.1",
+    "port": 27017,
+    "database": "cloudpolis",
+    "username": "",
+    "password": "password",
     "options": {
       "server": {
         "socketOptions": {

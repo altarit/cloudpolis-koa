@@ -1,11 +1,12 @@
-const User = require('models/user').User;
+const jwtUtils = require('services/authService');
 
 module.exports = async function (ctx, next) {
-  ctx.request.user = ctx.locals.user = null;
-
-  if (!ctx.session.user) return await next();
-  let user = await User.findById(ctx.session.user);
-  ctx.request.user = ctx.locals.user = user;
-
+  const token = ctx.headers['auth'];
+  if (token) {
+    const decoded = jwtUtils.verify(token);
+    if (decoded && decoded.username) {
+      ctx.request.user = decoded
+    }
+  }
   await next();
 };

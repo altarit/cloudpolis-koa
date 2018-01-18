@@ -18,7 +18,7 @@ exports.search = async function (ctx) {
   ctx.body = {data: filteredSongs};
 };
 
-exports.byhref = async function (ctx) {
+exports.bySrc = async function (ctx) {
   let href = ctx.request.query.href;
   const song = await musicService.searchTrackByHref(href);
   ctx.body = {data: song};
@@ -113,8 +113,8 @@ exports.getArtistByName = async function (ctx) {
  */
 
 exports.random = async function (ctx) {
-  let n = ctx.session.randomized || 0;
-  ctx.session.randomized = ++n;
+  let n = 15;
+  //ctx.session.randomized = ++n;
   let condition = {};
   if (n < 4) {
     condition = {mark: {$gt: 4}};

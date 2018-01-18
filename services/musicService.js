@@ -19,8 +19,8 @@ exports.searchTracksByQuery = async function (query) {
   return filteredSongs;
 };
 
-exports.searchTrackByHref = async function (href) {
-  let found = await Song.find({href: href.replace(/%/g, '%25').replace(/ /g, '%20')}).limit(1).exec();
+exports.searchTrackByHref = async function (src) {
+  let found = await Song.find({src: src.replace(/%/g, '%25').replace(/ /g, '%20')}).limit(1).exec();
   return found[0];
 };
 
@@ -118,7 +118,7 @@ exports.createCompilationsBulk = async function (libraryName, data, base) {
     }
 
     let content = {};
-    content.href = `/${libraryName}/${path}/${song.filename}`.replace(/%/g, '%25').replace(/ /g, '%20') + '.' + song.ext.toLowerCase();
+    content.src = `/${libraryName}/${path}/${song.filename}`.replace(/%/g, '%25').replace(/ /g, '%20') + '.' + song.ext.toLowerCase();
     content.title = song.title || song.filename;
     content.artist = song.artist || compName;
     //content.album = song.album || song.parent;
@@ -193,11 +193,12 @@ function getNameFromFullPath(fullPath) {
 
 
 exports.random = async function (condition, max) {
-  var count = await Song.count(condition);
-  var start = Math.floor(Math.random() * count - max);
+  log.debug(`Handling /random max=${max}`)
+  const count = await Song.count(condition);
+  let start = Math.floor(Math.random() * count - max);
   start = start < 0 ? 0 : start;
   console.log('s: ' + start + '  m: ' + max);
-  var result = await Song.find(condition).sort({rand: 1}).skip(start).limit(max).exec();
+  const result = await Song.find(condition).sort({rand: 1}).skip(start).limit(max).exec();
   return result;
 };
 
@@ -206,6 +207,38 @@ exports.dropSongs = async function () {
   if (songs) songs.drop();
   const compilations = mongoose.connection.collections['compilations'];
   if (compilations) compilations.drop();
+};
+
+exports.extract = async function () {
+  const allCompilations = await Compilation.find({});
+  const allSongs = [];
+
+  allCompilations.forEach((currentCompilation) => {
+    console.log(currentCompilation.name);
+    currentCompilation.songs.map(function (currentSong) {
+      const newSong = new Song({
+        src: currentSong.src,
+        title: currentSong.title,
+        artist: currentSong.artist,
+        album: currentSong.album,
+        compilation: currentCompilation.name,
+        library: currentCompilation.library,
+        duration: currentSong.duration,
+        size: currentSong.size,
+        mark: currentSong.mark,
+        search: currentSong.title.toLowerCase(),
+        rand: Math.floor(Math.random()*10000)
+      });
+      console.log(' - ' + currentSong.title);
+      allSongs.push(newSong);
+    });
+  });
+
+  console.log(`Removing song collection...`);
+  const removed = await Song.remove({});
+  console.log(`Removed ${removed} records`);
+  console.log(`Inserting ${allSongs.length} records`);
+  await Song.insertMany(allSongs);
 };
 
 exports.addToStat = async function (title, compilation) {
