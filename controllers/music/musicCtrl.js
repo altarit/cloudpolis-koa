@@ -25,6 +25,11 @@ exports.bySrc = async function (ctx) {
   ctx.request.isLogNeeded = true;
 };
 
+
+exports.addSingleStat = async function (ctx) {
+  ctx.body = {};
+};
+
 exports.libraries = async function (ctx) {
   let libraries = await musicService.getAllLibraries();
   ctx.body = {data: libraries};

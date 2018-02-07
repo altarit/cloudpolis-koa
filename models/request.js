@@ -7,7 +7,10 @@ let schema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  url: {
+  path: {
+    type: String
+  },
+  query: {
     type: String
   },
   body: {

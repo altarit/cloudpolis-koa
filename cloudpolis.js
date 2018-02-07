@@ -6,6 +6,8 @@ const router = require('koa-router')();
 const config = require('./config');
 const routes = require('./routes');
 
+const log = require('lib/log')(module);
+
 app.use(bodyParser({formLimit: 1024 * 1024 * 2}));
 
 app.keys = [config.jwt.secret];
@@ -19,3 +21,5 @@ router.use('/api/', routes.routes());
 app.use(router.routes());
 
 app.listen(config.port);
+
+log.debug(`Server is up & running on ${config.port} port`);
