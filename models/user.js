@@ -1,6 +1,4 @@
 const crypto = require('crypto')
-const util = require('util')
-const log = require('lib/log')(module)
 const mongoose = require('lib/mongoose')
 
 let schema = new mongoose.Schema({

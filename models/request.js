@@ -1,6 +1,4 @@
-const util = require('util');
-const log = require('lib/log')(module);
-const mongoose = require('lib/mongoose');
+const mongoose = require('lib/mongoose')
 
 let schema = new mongoose.Schema({
   created: {
@@ -40,9 +38,9 @@ let schema = new mongoose.Schema({
   response: {
     type: Object
   }
-});
+})
 
-exports.Request = mongoose.model('Request', schema);
+exports.Request = mongoose.model('Request', schema)
 
 
 

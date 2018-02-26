@@ -1,6 +1,4 @@
-const util = require('util');
-const log = require('lib/log')(module);
-const mongoose = require('lib/mongoose');
+const mongoose = require('lib/mongoose')
 
 let schema = new mongoose.Schema({
   name: {
@@ -16,9 +14,9 @@ let schema = new mongoose.Schema({
   tracks: {
     type: Object
   }
-});
+})
 
-exports.Playlist = mongoose.model('Playlist', schema);
+exports.Playlist = mongoose.model('Playlist', schema)
 
 
 
