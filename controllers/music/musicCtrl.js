@@ -62,6 +62,19 @@ exports.artists = async function (ctx) {
   ctx.body = {data: artists};
 };
 
+exports.getTrackInfo = async function (ctx) {
+  let trackId = ctx.params.trackId;
+  let trackInfo = await musicService.getTrackInfo(trackId);
+  ctx.body = {data: trackInfo || {}};
+};
+
+exports.setTrackInfo = async function (ctx) {
+  let trackId = ctx.params.trackId;
+  let lyrics = ctx.request.body.lyrics;
+  let updated = await musicService.setTrackInfo(trackId, lyrics);
+  ctx.body = {result: 'ok'};
+};
+
 exports.createCompilationsBulk = async function (ctx) {
   let libraryName = ctx.params.libraryName;
   let dataJson = ctx.request.body.tracks;
@@ -135,6 +148,11 @@ exports.random = async function (ctx) {
 
 exports.extract = async function (ctx) {
   let result = await musicService.extract();
+  ctx.body = {result: 200};
+};
+
+exports.extractFromSources = async function (ctx) {
+  let result = await musicService.extractFromSources(ctx.params.library);
   ctx.body = {result: 200};
 };
 

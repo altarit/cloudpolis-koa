@@ -27,9 +27,12 @@ const options = {
   regexp: /^/i,
   insert: true,
   logMusic: true,
-  libraries: {
-    "Artists": "D:\\Documents\\Music\\MAv16\\Artists"
-  },
+  regenerateIds: true,
+  libraries: [{
+    name: 'mlpfa',
+    source: 'D:\\Documents\\Music\\MAv16\\Artists',
+    id: 'aa'
+  }],
   remove: false
 }
 
@@ -37,7 +40,8 @@ const errors = {
   notMp3: [],
   id3Errors: [],
   emptyArtist: [],
-  emptyTitle: []
+  emptyTitle: [],
+  writeIds: []
 };
 
 
@@ -48,63 +52,106 @@ const errors = {
   })
 
   console.log('Create models:')
-  require('models/library')
-  require('models/compilation')
-  require('models/song')
+  require('models/songSource')
+  require('models/compilationSource')
+  require('models/librarySource')
   await Promise.all(Object.keys(mongoose.models).map((modelName) => {
     console.log(' ' + modelName)
     return mongoose.models[modelName].ensureIndexes()
   }))
 
   console.log('Build FileSystem')
-  for (let libraryName of Object.keys(options.libraries)) {
-    await createCompilations(options.libraries[libraryName], options.regexp, libraryName)
+  for (let library of options.libraries) {
+    await createCompilations(library.source, options.regexp, library.name, library.id)
   }
   console.log('\nDone. Press Ctrl+C for exit...')
 })()
 
-async function createCompilations(root, reg, library) {
+async function createCompilations(root, reg, library, libId) {
   let objects = fs.readdirSync(root)
-  let found = {}
+  let allTracks = []
+  let allCompilations = []
+  let partOfSetFreeNum = 0
+  let partOfSetArray = []
+  let partOfSetMap = {}
+
+  try {
+    let partOfSetMapStr = fs.readFileSync(path.resolve(root, 'compilations.json'), 'utf8')
+    partOfSetArray = JSON.parse(partOfSetMapStr)
+    partOfSetMap = arrayToMap(partOfSetArray, 'part')
+  } catch (err) {
+    console.log(`Error at reading compilations.json`, err)
+  }
+
   for (let el of objects) {
     let fullpath = path.resolve(root, el)
     if (!fs.lstatSync(fullpath).isDirectory() || (reg && !reg.test(el))) {
-      console.log('! - ' + el)
       continue
     }
     printSeparator()
     printLine(el)
 
-    let content = await lookInside(root, el, '/', 1, library)
-    if (content.length) {
-      found[el] = content
+    let partOfSetId = '--'
+    let safeRecord = partOfSetArray.find(e => e.compilation === el)
+    if (safeRecord) {
+      partOfSetId = safeRecord.part
     } else {
-      console.log('empty folder ')
+      while (partOfSetMap[getBase64(partOfSetFreeNum)]) {
+        partOfSetFreeNum++
+      }
+      partOfSetId = getBase64(partOfSetFreeNum)
+      let newPart = {part: partOfSetId, compilation: el}
+      partOfSetArray.push(newPart)
+      partOfSetMap[partOfSetId] = newPart
     }
+
+    let trackFiles = await searchTracksRecursively(fullpath, './', '', 0)
+    console.log(`~~~trackFiles[${el}] = ${trackFiles.length}`)
+    console.log(trackFiles)
+
+    if (trackFiles.length) {
+      let tracks = await getTracksData(fullpath, trackFiles, library, el, libId + partOfSetId)
+      let comp = {
+        id: libId + partOfSetId,
+        name: el,
+        tracks: tracks,
+        library: library
+      }
+      console.log(`#====== found ========# ${tracks.length}`)
+
+      allTracks.push(...tracks)
+      allCompilations.push(comp)
+    } else {
+      console.log(`Empty compilation folder ${el}`)
+    }
+    partOfSetMap[partOfSetId] = el
   }
 
+  console.log(`Found ${allTracks.length} tracks in ${allCompilations.length} compilations.`)
+
+  fs.writeFileSync(path.resolve(root, 'compilations.json'), JSON.stringify(partOfSetArray))
+
   if (options.insert) {
-    console.log('Drop Compilations')
-    await mongoose.models.Compilation.remove({library: library})
-    await mongoose.models.Song.remove({library: library})
+    console.log('Drop SongSource')
+    await mongoose.models.SongSource.remove({library: library})
+    await mongoose.models.CompilationSource.remove({library: library})
+    await mongoose.models.LibrarySource.remove({name: library})
+    //await mongoose.models.Song.remove({library: library})
 
-    console.log(`Create library in db`)
-    for (let key of Object.keys(found)) {
-      let value = found[key]
-      let compilation = new mongoose.models.Compilation({
-        name: key,
-        songs: value,
-        count: value.length,
-        library: library
-      })
-      await compilation.save()
+    console.log(`Save SongSource in db`)
+    let songEntities = allTracks.map(obj => new mongoose.models.SongSource(obj))
+    let insertSongsResult = await mongoose.models.SongSource.insertMany(songEntities)
+    console.log(`Inserted: ${insertSongsResult.length}`)
 
-      for(let track of value) {
-        track.compilation = key
-        let song = new mongoose.models.Song(track)
-        await song.save()
-      }
-    }
+    console.log(`Save CompilationSource in db`)
+    let compEntities = allCompilations.map(obj => new mongoose.models.CompilationSource(obj))
+    let insertCompResult = await mongoose.models.CompilationSource.insertMany(compEntities)
+    console.log(`Inserted: ${insertCompResult.length}`)
+
+    console.log(`Save LibrarySource in db`)
+    let insertLibResult = await new mongoose.models.LibrarySource({id: libId, name: library}).save()
+    console.log(`Inserted: ${insertLibResult.length}`)
+
   }
 
   console.log('--emptyTitle : ' + errors.emptyTitle.length + '--')
@@ -115,19 +162,23 @@ async function createCompilations(root, reg, library) {
   console.log(errors.id3Errors)
   console.log('--notMp3 : ' + errors.notMp3.length + '--')
   console.log(errors.notMp3)
+  console.log('--writeIds : ' + errors.writeIds.length + '--')
+  console.log(errors.writeIds)
 }
 
-async function lookInside(root, dir, fromroot, depth, library) {
-  fromroot = fromroot + dir + '/'
-  let newroot = path.resolve(root, dir)
-  let objects = fs.readdirSync(newroot)
+async function searchTracksRecursively(root, fromroot, dirName, depth) {
+  let dir = path.resolve(root, fromroot)
+  let objects = fs.readdirSync(dir)
   let content = []
 
-  for (let el of objects) {
-    let fullpath = path.resolve(newroot, el)
+  console.log(`${root} -- ${fromroot} -- ${dir}`)
 
+  for (let el of objects) {
+    let fullpath = path.resolve(dir, el)
+    let relativePath = fromroot + el
     if (fs.lstatSync(fullpath).isDirectory()) {
-      let insideData = await lookInside(newroot, el, fromroot, depth + 1, library)
+      printLine(el, depth + 1)
+      let insideData = await searchTracksRecursively(root, relativePath + '/', el, depth + 1)
       if (insideData.length) {
         content = content.concat(insideData)
       } else {
@@ -136,33 +187,74 @@ async function lookInside(root, dir, fromroot, depth, library) {
     } else {
       if (/^.*\.(mp3|ogg|m4a|aac)$/i.test(el)) {
         if (options.logMusic) {
-          printLine(el, depth)
+          printLine(el, depth + 1)
         }
-
-        let metadata = await getTags(fullpath)
-        metadata.src = '/' + library + (fromroot + el).replace(/%/g, '%25').replace(/ /g, '%20')
-        if (!metadata.artist) {
-          errors.emptyArtist.push(fromroot + el)
-          metadata.artist = fromroot.substring(1, fromroot.indexOf('/', 2))
-        }
-        if (!metadata.title) {
-          errors.emptyTitle.push(fromroot + el)
-          metadata.title = el.slice(0, -4)
-        }
-        if (!metadata.album) {
-          metadata.album = dir
-        }
-        metadata.library = library
-        metadata.search = metadata.title.toLowerCase();
-
-        console.log(metadata)
-
-        content.push(metadata)
+        content.push({
+          fullpath: fullpath,
+          relativePath: relativePath.substring(2),
+          fileName: el,
+          dirName: dirName
+        })
       }
-
     }
   }
+  return content
+}
 
+async function getTracksData(root, trackFiles, library, compilation, compId) {
+  let content = []
+  let trackNoFreeNum = 0
+  let trackNoArray = []
+  let trackNoMap = {}
+
+  try {
+    let partOfSetMapStr = fs.readFileSync(path.resolve(root, 'tracks.json'), 'utf8')
+    trackNoArray = JSON.parse(partOfSetMapStr)
+    trackNoMap = arrayToMap(trackNoArray, 'no')
+  } catch (err) {
+    console.log(`Error at reading compilations.json`, err)
+  }
+
+
+  for (let trackFile of trackFiles) {
+
+    let trackNo = '--'
+    let safeRecord = trackNoArray.find(e => e.path === trackFile.relativePath)
+    if (safeRecord) {
+      trackNo = safeRecord.no
+    } else {
+      while (trackNoMap[getBase64(trackNoFreeNum)]) {
+        trackNoFreeNum++
+      }
+      trackNo = getBase64(trackNoFreeNum)
+      let newPart = {no: trackNo, path: trackFile.relativePath}
+      trackNoArray.push(newPart)
+      trackNoMap[trackNo] = newPart
+    }
+
+
+    let metadata = await getTags(trackFile.fullpath)
+    metadata.src = '/' + library + '/' + compilation + '/' + trackFile.relativePath.replace(/%/g, '%25').replace(/ /g, '%20')
+    if (!metadata.artist) {
+      errors.emptyArtist.push(trackFile.relativePath)
+      metadata.artist = compilation
+    }
+    if (!metadata.title) {
+      errors.emptyTitle.push(trackFile.relativePath)
+      metadata.title = trackFile.fileName
+    }
+    if (!metadata.album) {
+      metadata.album = ''
+    }
+    metadata.library = library
+    metadata.search = metadata.title.toLowerCase()
+    metadata.compilation = compilation
+    metadata.id = compId + trackNo
+
+    content.push(metadata)
+  }
+
+  fs.writeFileSync(path.resolve(root, 'tracks.json'), JSON.stringify(trackNoArray))
   return content
 }
 
@@ -178,9 +270,11 @@ async function getTags(path) {
 
   let tags
   try {
+    console.log(`reading ${path}`)
     tags = id3.read(path)
   } catch (e) {
     console.log(`Error at parsing id3 tags for ${path} via node-id3: ${e}`)
+    errors.writeIds.push(path)
     throw e
   }
 
@@ -203,6 +297,26 @@ async function getTags(path) {
     title: tags.title,
     artist: tags.artist,
     album: tags.album,
-    year: tags.year
+    year: tags.year ? tags.year.substring(0, 4) : null
   }
+}
+
+const BASE64_ABC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+
+function getBase64(n) {
+  if (n < 0 || n >= 64 * 64) {
+    throw Error(`Number ${n} is out of boundaries.`)
+  }
+  let first = BASE64_ABC[n >> 6]
+  let second = BASE64_ABC[n % 64]
+  //console.log(`n=${n}`)
+  return first + second
+}
+
+function arrayToMap(arr, key) {
+  let resultMap = {}
+  for (let el of arr) {
+    resultMap[el[key]] = el
+  }
+  return resultMap
 }
