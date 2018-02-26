@@ -39,6 +39,8 @@ router.get('music/songs', require('./controllers/music/musicCtrl').bySrc);
 router.post('music/extract', checkAdmin, require('./controllers/music/musicCtrl').extract);
 router.delete('music/songs', checkAdmin, require('./controllers/music/musicCtrl').dropSongs);
 router.get('music/stats/single', require('./controllers/music/musicCtrl').addSingleStat);
+router.get('music/tracks/:trackId', require('./controllers/music/musicCtrl').getTrackInfo);
+router.put('music/tracks/:trackId', require('./controllers/music/musicCtrl').setTrackInfo);
 
 // Playlists
 router.get('music/playlists', require('./controllers/music/playlistsCtrl').playlists);

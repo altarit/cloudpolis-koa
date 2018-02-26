@@ -1,6 +1,6 @@
-const util = require('util');
-const log = require('lib/log')(module);
-const mongoose = require('lib/mongoose');
+const util = require('util')
+const log = require('lib/log')(module)
+const mongoose = require('lib/mongoose')
 
 let schema = new mongoose.Schema({
   created: {
@@ -16,9 +16,9 @@ let schema = new mongoose.Schema({
   user: {
     type: String
   }
-});
+})
 
-exports.Request = mongoose.model('RefreshToken', schema);
+exports.Request = mongoose.model('RefreshToken', schema)
 
 
 
