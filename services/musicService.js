@@ -260,6 +260,7 @@ exports.dropSongs = async function () {
 // };
 
 exports.extract = async function () {
+  console.log(`Extracting sources...`)
   let librarySources = await LibrarySource.find()
   let compilationSources = await CompilationSource.find()
   let songSources = await SongSource.find()
