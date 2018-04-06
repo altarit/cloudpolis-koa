@@ -14,22 +14,9 @@ let schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  songs: {
-    type: Object
-  },
-  count: {
-    type: Number
-  },
-  rating: {
-    type: Number
-  },
   cover: {
     type: String
   }
 })
 
-exports.Compilation = mongoose.model('Compilation', schema)
-
-
-
-
+exports.CompilationSource = mongoose.model('CompilationSource', schema)

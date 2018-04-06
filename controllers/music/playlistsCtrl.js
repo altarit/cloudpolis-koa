@@ -38,7 +38,7 @@ exports.updatePlaylist = async function (ctx) {
   let playlistName = ctx.params.name;
   log.debug(`Put playlist /${userName}/${playlistName}`);
 
-  let tracks = ctx.request.body.tracks;
+  let tracks = ctx.request.body.playlist.tracks;
   if (!Array.isArray(tracks)) {
     throw new HttpError(400, 'Tracks should be an array');
   }

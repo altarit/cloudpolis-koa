@@ -1,13 +1,14 @@
-const util = require('util');
-const log = require('lib/log')(module);
-const mongoose = require('lib/mongoose');
+const mongoose = require('lib/mongoose')
 
 let schema = new mongoose.Schema({
   created: {
     type: Date,
     default: Date.now
   },
-  url: {
+  path: {
+    type: String
+  },
+  query: {
     type: String
   },
   body: {
@@ -37,9 +38,9 @@ let schema = new mongoose.Schema({
   response: {
     type: Object
   }
-});
+})
 
-exports.Request = mongoose.model('Request', schema);
+exports.Request = mongoose.model('Request', schema)
 
 
 

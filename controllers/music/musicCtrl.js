@@ -25,6 +25,11 @@ exports.bySrc = async function (ctx) {
   ctx.request.isLogNeeded = true;
 };
 
+
+exports.addSingleStat = async function (ctx) {
+  ctx.body = {};
+};
+
 exports.libraries = async function (ctx) {
   let libraries = await musicService.getAllLibraries();
   ctx.body = {data: libraries};
@@ -55,6 +60,19 @@ exports.deleteLibrary = async function (ctx) {
 exports.artists = async function (ctx) {
   let artists = await musicService.getAllArtists();
   ctx.body = {data: artists};
+};
+
+exports.getTrackInfo = async function (ctx) {
+  let trackId = ctx.params.trackId;
+  let trackInfo = await musicService.getTrackInfo(trackId);
+  ctx.body = {data: trackInfo || {}};
+};
+
+exports.setTrackInfo = async function (ctx) {
+  let trackId = ctx.params.trackId;
+  let lyrics = ctx.request.body.lyrics;
+  let updated = await musicService.setTrackInfo(trackId, lyrics);
+  ctx.body = {result: 'ok'};
 };
 
 exports.createCompilationsBulk = async function (ctx) {
@@ -130,6 +148,11 @@ exports.random = async function (ctx) {
 
 exports.extract = async function (ctx) {
   let result = await musicService.extract();
+  ctx.body = {result: 200};
+};
+
+exports.extractFromSources = async function (ctx) {
+  let result = await musicService.extractFromSources(ctx.params.library);
   ctx.body = {result: 200};
 };
 

@@ -6,10 +6,23 @@ module.exports = async function (ctx, next) {
   await next();
 
   let responseTime = new Date() - start;
-  console.info('--> %s %s %sms %s', ctx.method, ctx.request.url, responseTime, ctx.response.status);
+  log.debug('--> %s %s %sms %s', ctx.method, ctx.request.url, responseTime, ctx.response.status);
+
+  let url = ctx.request.url
+  let paramsPos = url.indexOf('?')
+  let path, query
+  if (paramsPos !== -1) {
+    path = url.substring(0, paramsPos)
+    if (paramsPos + 1 < url.length) {
+      query = url.substr(paramsPos + 1)
+    }
+  } else {
+    path = url
+  }
+
   let request = new Request({
-    url: ctx.request.url,
-    body: ctx.request.body,
+    path: path,
+    query: query,
     user: ctx.request.user ? ctx.request.user.username : null,
     session: ctx.sessionId,
     ip: ctx.request.headers['x-real-ip'] || ctx.request.ip,
@@ -17,9 +30,8 @@ module.exports = async function (ctx, next) {
     referer: ctx.request.headers['referer'],
     time: responseTime,
     status: ctx.response.status,
-    response: ctx.request.isLogNeeded ? ctx.body : {}
   });
 
-  await request.save();
+  request.save();
 };
 

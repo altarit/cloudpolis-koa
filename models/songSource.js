@@ -3,8 +3,16 @@ const mongoose = require('lib/mongoose')
 const schema = new mongoose.Schema({
   id: {
     type: String,
-    requred: true,
+    required: true,
     unique: true
+  },
+  library: {
+    type: String,
+    required: true
+  },
+  compilation: {
+    type: String,
+    required: true
   },
   title: {
     type: String,
@@ -14,18 +22,12 @@ const schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  compilation: {
-    type: String,
-    required: true,
-    unique: false
-  },
   album: {
     type: String
   },
   src: {
     type: String,
-    requred: true,
-    unique: true
+    requred: true
   },
   duration: {
     type: String
@@ -39,16 +41,6 @@ const schema = new mongoose.Schema({
   mark: {
     type: Number
   },
-  rand: {
-    type: Number
-  },
-  library: {
-    type: String
-  }
 })
 
-exports.Song = mongoose.model('Song', schema)
-
-
-
-
+exports.SongSource = mongoose.model('SongSource', schema)
