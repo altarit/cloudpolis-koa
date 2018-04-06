@@ -132,14 +132,8 @@ exports.getArtistByName = async function (ctx) {
 
 exports.random = async function (ctx) {
   let n = 15;
-  //ctx.session.randomized = ++n;
-  let condition = {};
-  if (n < 4) {
-    condition = {mark: {$gt: 4}};
-  } else if (n < 15) {
-    condition = {mark: {$gt: 3}};
-  }
-  console.log(n + ' ' + JSON.stringify(condition));
+  let filter = ctx.request.query.filter;
+  let condition = filter ? JSON.parse(filter) : {"library":{"$in":["common"]}}
 
   let result = await musicService.random(condition, 20);
   ctx.body = {data: result};
