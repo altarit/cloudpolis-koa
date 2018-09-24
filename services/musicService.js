@@ -53,6 +53,7 @@ exports.getCompilationsByLibraryName = async function (libraryName) {
 
 exports.createLibrary = async function (libraryName) {
   const library = new Library({
+    id: libraryName,
     name: libraryName
   })
   let result = await library.save()

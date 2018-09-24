@@ -28,10 +28,16 @@ const options = {
   insert: true,
   logMusic: true,
   regenerateIds: true,
-  libraries: [{
-    name: 'mlpfa',
-    source: 'D:\\Documents\\Music\\MAv16\\Artists',
-    id: 'aa'
+  libraries: [
+  //   {
+  //   name: 'mlpfa',
+  //   source: 'D:\\Documents\\Music\\MAv16\\Artists',
+  //   id: 'aa'
+  // }
+  {
+    name: 'mlpost',
+    source: 'D:\\Documents\\Music\\MAv16\\My Little Pony Ost\\mlpost',
+    id: 'ab'
   }],
   remove: false
 }
