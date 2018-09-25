@@ -1,7 +1,7 @@
 'use strinct';
-var mongoose = require('lib/mongoose');
+var mongoose = require('src/lib/mongoose');
 var co = require('co');
-var Counter = require('models/counter').Counter;
+var Counter = require('src/models/counter').Counter;
 
 var countersNames = ['post_id'];
 //db.counters.update({_id: "post_id"}, {_id: "post_id", seq: 0}, {upsert: 1});

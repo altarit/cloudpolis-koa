@@ -19,7 +19,7 @@
 
 const fs = require('fs')
 const path = require('path')
-const mongoose = require('lib/mongoose')
+const mongoose = require('src/lib/mongoose')
 const id3 = require('node-id3')
 
 //mongoose.disconnect();
@@ -58,9 +58,9 @@ const errors = {
   })
 
   console.log('Create models:')
-  require('models/songSource')
-  require('models/compilationSource')
-  require('models/librarySource')
+  require('src/models/songSource')
+  require('src/models/compilationSource')
+  require('src/models/librarySource')
   await Promise.all(Object.keys(mongoose.models).map((modelName) => {
     console.log(' ' + modelName)
     return mongoose.models[modelName].ensureIndexes()

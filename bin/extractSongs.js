@@ -1,10 +1,10 @@
 var fs = require('fs');
 var path = require('path');
 var async = require('async');
-var mongoose = require('lib/mongoose');
+var mongoose = require('src/lib/mongoose');
 var id3 = require('id3js');
-var Song = require('models/song').Song;
-var Compilation = require('models/compilation').Compilation;
+var Song = require('src/models/song').Song;
+var Compilation = require('src/models/compilation').Compilation;
 
 /*id3({ file: 'D:\\Documents\\Music\\mlp2\\MAv16\\Fanmade\\Artists\\M_Pallante\\M_Pallante - Oh, Celestia.mp3', type: id3.OPEN_LOCAL }, function(err, tags) {
  console.log(err);
