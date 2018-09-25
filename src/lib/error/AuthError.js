@@ -1,12 +1,13 @@
-const util = require('util');
+const util = require('util')
 
 function AuthError(message) {
-  Error.apply(this, arguments);
-  Error.captureStackTrace(this, AuthError);
+  Error.apply(this, arguments)
+  Error.captureStackTrace(this, AuthError)
 
-  this.message = message;
+  this.message = message
 }
-util.inherits(AuthError, Error);
-AuthError.prototype.name = 'AuthError';
 
-exports.AuthError = AuthError;
+util.inherits(AuthError, Error)
+AuthError.prototype.name = 'AuthError'
+
+exports.AuthError = AuthError

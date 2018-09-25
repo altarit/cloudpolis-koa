@@ -5,8 +5,8 @@ exports.index = async function (ctx, next) {
     payload: {
       message: 'Hello Everypony!!!'
     }
-  };
-};
+  }
+}
 
 exports.inProgress = async function (ctx, next) {
   ctx.body = {
@@ -14,5 +14,5 @@ exports.inProgress = async function (ctx, next) {
     error: {
       message: 'Not implemented yet.'
     }
-  };
-};
+  }
+}

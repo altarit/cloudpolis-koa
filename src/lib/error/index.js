@@ -1,3 +1,3 @@
-const HttpError = require('./HttpError').HttpError;
+const HttpError = require('./HttpError').HttpError
 
-exports.HttpError = HttpError;
+exports.HttpError = HttpError

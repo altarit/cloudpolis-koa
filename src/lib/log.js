@@ -1,8 +1,8 @@
-const winston = require('winston');
-const ENV = process.env.NODE_ENV;
+const winston = require('winston')
+const ENV = process.env.NODE_ENV
 
 function getLogger(module) {
-  const path = module.filename.split('\\').slice(-3).join('\\');
+  const path = module.filename.split('\\').slice(-3).join('\\')
   return winston.createLogger({
     transports: [
       new winston.transports.Console({
@@ -12,7 +12,7 @@ function getLogger(module) {
         json: false
       })
     ]
-  });
+  })
 }
 
-module.exports = getLogger;
+module.exports = getLogger

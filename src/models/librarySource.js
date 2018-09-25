@@ -1,6 +1,6 @@
-const util = require('util');
-const log = require('src/lib/log')(module);
-const mongoose = require('src/lib/mongoose');
+const util = require('util')
+const log = require('src/lib/log')(module)
+const mongoose = require('src/lib/mongoose')
 
 let schema = new mongoose.Schema({
   id: {
@@ -12,6 +12,6 @@ let schema = new mongoose.Schema({
     type: String,
     required: true
   }
-});
+})
 
-exports.LibrarySource = mongoose.model('LibrarySource', schema);
+exports.LibrarySource = mongoose.model('LibrarySource', schema)

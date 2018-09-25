@@ -1,12 +1,12 @@
-const Request = require('src/models/request').Request;
-const log = require('src/lib/log')(module);
+const Request = require('src/models/request').Request
+const log = require('src/lib/log')(module)
 
 module.exports = async function (ctx, next) {
-  let start = new Date();
-  await next();
+  let start = new Date()
+  await next()
 
-  let responseTime = new Date() - start;
-  log.debug('--> %s %s %sms %s', ctx.method, ctx.request.url, responseTime, ctx.response.status);
+  let responseTime = new Date() - start
+  log.debug('--> %s %s %sms %s', ctx.method, ctx.request.url, responseTime, ctx.response.status)
 
   let url = ctx.request.url
   let paramsPos = url.indexOf('?')
@@ -30,8 +30,8 @@ module.exports = async function (ctx, next) {
     referer: ctx.request.headers['referer'],
     time: responseTime,
     status: ctx.response.status,
-  });
+  })
 
-  request.save();
-};
+  request.save()
+}
 

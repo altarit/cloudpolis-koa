@@ -14,34 +14,34 @@ exports.searchTracksByQuery = async function (query) {
   let filter
   try {
     filter = {
-      search: {$regex: new RegExp(query.toLowerCase())}
+      search: { $regex: new RegExp(query.toLowerCase()) }
     }
   } catch (e) {
     throw new HttpError(402, 'Wrong filter')
   }
 
-  let filteredSongs = await Song.find(filter).sort({mark: -1}).limit(50).exec()
+  let filteredSongs = await Song.find(filter).sort({ mark: -1 }).limit(50).exec()
   return filteredSongs
 }
 
 exports.searchTrackByHref = async function (src) {
-  let found = await Song.find({src: src.replace(/%/g, '%25').replace(/ /g, '%20')}).limit(1).exec()
+  let found = await Song.find({ src: src.replace(/%/g, '%25').replace(/ /g, '%20') }).limit(1).exec()
   return found[0]
 }
 
 exports.getAllArtists = async function () {
-  const compilations = await Compilation.find({}, {name: 1, count: 1, library: 1, _id: 0}).sort({name: 1}).exec()
+  const compilations = await Compilation.find({}, { name: 1, count: 1, library: 1, _id: 0 }).sort({ name: 1 }).exec()
   return compilations
 }
 
 exports.getAllLibraries = async function () {
-  const libraries = await Library.find({}, {name: 1, count: 1, library: 1, fullpath: 1, _id: 0})
-    .sort({name: 1}).exec()
+  const libraries = await Library.find({}, { name: 1, count: 1, library: 1, fullpath: 1, _id: 0 })
+    .sort({ name: 1 }).exec()
   return libraries
 }
 
 exports.getCompilationsByLibraryName = async function (libraryName) {
-  const compilations = await Compilation.find({library: libraryName}, {
+  const compilations = await Compilation.find({ library: libraryName }, {
     name: 1,
     count: 1,
     library: 1,
@@ -61,24 +61,24 @@ exports.createLibrary = async function (libraryName) {
 }
 
 exports.deleteLibrary = async function (libraryName) {
-  const library = await Library.findOne({name: libraryName})
+  const library = await Library.findOne({ name: libraryName })
   let result = await library.remove().exec()
   return result
 }
 
 exports.getArtistByName = async function (library, name) {
-  const artists = await Compilation.findOne({library: library, name: name})
+  const artists = await Compilation.findOne({ library: library, name: name })
   return artists
 }
 
 exports.getTrackInfo = async function (trackId) {
-  const trackInfo = await SongInfo.find({id: trackId})
+  const trackInfo = await SongInfo.find({ id: trackId })
   return trackInfo[0]
 }
 
 exports.setTrackInfo = async function (trackId, lyrics) {
   log.debug(`insert ${trackId}=${lyrics}`)
-  const trackInfo = await SongInfo.update({id: trackId}, {id: trackId, lyrics: lyrics}, {upsert: true})
+  const trackInfo = await SongInfo.update({ id: trackId }, { id: trackId, lyrics: lyrics }, { upsert: true })
 
   log.debug(`inserted ${trackInfo}`)
   return trackInfo
@@ -86,7 +86,7 @@ exports.setTrackInfo = async function (trackId, lyrics) {
 
 exports.createCompilationsBulk = async function (libraryName, data, base) {
   log.debug(`createCompilationsBulk for '${libraryName}' library`)
-  let library = await Library.find({name: libraryName})
+  let library = await Library.find({ name: libraryName })
 
   let startTime = Date.now()
   let compHash = {}
@@ -217,7 +217,7 @@ exports.random = async function (condition, max) {
   let start = Math.floor(Math.random() * count - max)
   start = start < 0 ? 0 : start
   console.log('s: ' + start + '  m: ' + max)
-  const result = await Song.find(condition).sort({rand: 1}).skip(start).limit(max).exec()
+  const result = await Song.find(condition).sort({ rand: 1 }).skip(start).limit(max).exec()
   return result
 }
 

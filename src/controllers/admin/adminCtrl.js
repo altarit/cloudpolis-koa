@@ -29,10 +29,10 @@ exports.accesslog = async function (ctx, next) {
     let filter = {}
 
     if (url) {
-      filter.path = {$regex: new RegExp(url)}
+      filter.path = { $regex: new RegExp(url) }
     }
 
-    if (user || excludeMe === 'true' ) {
+    if (user || excludeMe === 'true') {
       filter.user = {}
       if (excludeMe === 'true') {
         //log.debug(`!excludeMe=${excludeMe}`)
@@ -43,7 +43,7 @@ exports.accesslog = async function (ctx, next) {
       }
     }
 
-    if (ip || excludeMyIp === 'true' ) {
+    if (ip || excludeMyIp === 'true') {
       filter.ip = {}
       if (excludeMyIp === 'true') {
         //log.debug(`!excludeMe=${excludeMe}`)
@@ -54,9 +54,9 @@ exports.accesslog = async function (ctx, next) {
         filter.ip['$in'] = [ip]
       }
     }
-    let requests = await Request.find(filter).sort({created: -1}).skip(skip).limit(limit).exec()
+    let requests = await Request.find(filter).sort({ created: -1 }).skip(skip).limit(limit).exec()
 
-    ctx.body = {data: {requests: requests}}
+    ctx.body = { data: { requests: requests } }
   } catch (e) {
     log.error(`Error at getting access logs`, e)
     throw new Error(e)
@@ -66,8 +66,8 @@ exports.accesslog = async function (ctx, next) {
 exports.musicLog = async function (ctx, next) {
   log.debug('music_log')
   let req = ctx.request
-  let requests = await MusicStat.find({}).sort({created: -1}).limit(100).exec()
-  ctx.body = {data: {requests: requests}}
+  let requests = await MusicStat.find({}).sort({ created: -1 }).limit(100).exec()
+  ctx.body = { data: { requests: requests } }
 }
 
 exports.statistic = async function (ctx, next) {
