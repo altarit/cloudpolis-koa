@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var mongoose = require('lib/mongoose');
+var mongoose = require('src/lib/mongoose');
 var id3 = require('id3js');
 var deasync = require('deasync');
 var ffprobe = require('ffprobe');
@@ -201,7 +201,7 @@ co(function* () {
     yield compilations.drop();
 
   console.log('Create models:');
-  require('models/compilation');
+  require('src/models/compilation');
   yield Promise.all(Object.keys(mongoose.models).map((modelName) => {
     console.log(' ' + modelName);
     return mongoose.models[modelName].ensureIndexes();

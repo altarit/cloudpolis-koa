@@ -1,0 +1,28 @@
+const util = require('util')
+const log = require('src/lib/log')(module)
+const mongoose = require('src/lib/mongoose')
+
+let schema = new mongoose.Schema({
+  created: {
+    type: Date,
+    default: Date.now
+  },
+  token: {
+    type: String
+  },
+  expires: {
+    type: Date
+  },
+  username: {
+    type: String
+  },
+  isActive: {
+    type: Boolean
+  }
+})
+
+exports.RefreshToken = mongoose.model('RefreshToken', schema)
+
+
+
+
