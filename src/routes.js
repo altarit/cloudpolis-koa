@@ -1,6 +1,5 @@
 const router = require('koa-router')()
 const checkRoles = require('./middlewares/checkRoles')
-const loadUser = require('./middlewares/loadUser')
 
 const checkAuth = checkRoles()
 const checkAdmin = checkRoles('Q')
