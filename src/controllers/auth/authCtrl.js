@@ -4,7 +4,13 @@ const log = require('src/lib/log')(module)
 const UserService = require('src/services/userService')
 const authService = require('src/services/authService')
 
-exports.auth = async function (ctx, next) {
+exports.auth = auth
+exports.renewAccessToken = renewAccessToken
+exports.renewTokenPair = renewTokenPair
+exports.check = check
+exports.logout = logout
+
+async function auth (ctx, next) {
   console.log('!!! auth !!!')
   let req = ctx.request
   let username = req.body.username ? req.body.username.trim() : ''
@@ -34,7 +40,7 @@ exports.auth = async function (ctx, next) {
   }
 }
 
-exports.renewAccessToken = async function (ctx, next) {
+async function renewAccessToken (ctx, next) {
   const body = ctx.request.body
   const { username } = body
   const refreshToken = ctx.headers['refresh']
@@ -56,7 +62,7 @@ exports.renewAccessToken = async function (ctx, next) {
   }
 }
 
-exports.renewTokenPair = async function (ctx, next) {
+async function renewTokenPair (ctx, next) {
   const body = ctx.request.body
   const { username } = body
   const refreshToken = ctx.headers['refresh']
@@ -78,7 +84,7 @@ exports.renewTokenPair = async function (ctx, next) {
   }
 }
 
-exports.check = async function (ctx, next) {
+async function check (ctx, next) {
   if (ctx.request.user) {
     const username = ctx.request.user.username
     const token = authService.sign({
@@ -95,7 +101,7 @@ exports.check = async function (ctx, next) {
   }
 }
 
-exports.logout = async function (ctx, next) {
+async function logout (ctx, next) {
   let sid = ctx.sessionId
   ctx.session = null
   ctx.body = { result: true }

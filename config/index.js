@@ -1,5 +1,4 @@
 module.exports = {
-  "port": 3002,
   "secret": "replace_me",
   "accessToken": {
     "expiresInMinutes": 10,
@@ -8,6 +7,13 @@ module.exports = {
   "refreshToken": {
     "expiresInMinutes": 30,
     "secret": "refresh_replace"
+  },
+  "http": {
+    "bodyLimitInKb": 2048,
+    "port": 3002
+  },
+  "logs": {
+    "dirPath": "./logs/"
   },
   "mongoose": {
     "host": "127.0.0.1",

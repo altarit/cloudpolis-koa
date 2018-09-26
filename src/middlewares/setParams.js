@@ -1,3 +1,5 @@
+const log = require('src/lib/log')(module)
+
 module.exports = async function (ctx, next) {
   ctx.set("Access-Control-Allow-Origin", "http://localhost:3000")
   ctx.set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
@@ -14,7 +16,7 @@ module.exports = async function (ctx, next) {
   ctx.set('Expires', '-1')
   ctx.set('Pragma', 'no-cache')
 
-  console.log('origin: ' + ctx.get('Origin'))
+  log.debug('origin: ' + ctx.get('Origin'))
   //this.set('Access-Control-Allow-Origin', 'http://localhost:3000');
   await next()
 }
