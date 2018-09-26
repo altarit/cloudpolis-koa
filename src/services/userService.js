@@ -14,6 +14,7 @@ exports.cutExtraFields = function (user) {
 }
 
 exports.authorize = async function (username, password) {
+  log.debug(`authService.authorize() with username %s`, username)
   let user = await this._findOneByName(username)
   if (user) {
     if (user.checkPassword(password))
@@ -26,24 +27,30 @@ exports.authorize = async function (username, password) {
 }
 
 function validateUserInfo(username, password, email, additional) {
-  if (username !== null && !/^.{1,20}$/.test(username))
+  if (!username || !/^.{1,20}$/.test(username))
     throw new AuthError('Username should be shorter than 20 characters and consist of latin symbols and digits. You know it, right?')
-  if (password !== null && !/^.{0,40}$/.test(password))
+  if (!password || !/^.{0,40}$/.test(password))
     throw new AuthError('Password: 6-40 characters')
-  if (additional != null && additional.length > 1000)
+  if (additional && additional.length > 1000)
     throw new AuthError('Additional should be shorter than 1000 characters.')
   if (email != null && email.length > 60)
     throw new AuthError('Email should be shorter than 60 characters.')
 }
 
 exports.register = async function (username, password, email, additional) {
+  log.debug(`authService.register() with username %s`, username)
   validateUserInfo(username, password, email, additional)
 
   let user = await this._findOneByName(username)
   if (user) {
-    throw new AuthError('Username is already used')
+    throw new AuthError('Username has already taken.')
   } else {
-    let user = new User({ username: username, password: password, email: email, additional: additional })
+    let user = new User({
+      username: username,
+      password: password,
+      email: email,
+      additional: additional
+    })
     await user.save()
     return this.cutExtraFields(user)
   }

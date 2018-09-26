@@ -2,11 +2,12 @@ const fs = require('fs')
 const path = require('path')
 
 const { createLogger, format, transports } = require('winston')
-const { printf } = format
+const { combine, printf, splat } = format
 
 const config = require('config')
 const dirPath = config.logs.dirPath
 const ENV = process.env.NODE_ENV
+const stackTraceLength = 1000
 
 module.exports = getLogger
 module.exports.prepareLogger = prepareLogger
@@ -26,19 +27,31 @@ const myFormat = loggerName => printf(info => {
 
 function getLogger (module) {
   const loggerName = module.filename ? module.filename.split('\\').slice(-3).join('\\') : module
-  return createLogger({
+  const logger = createLogger({
     transports: [
       new transports.Console({
         level: (ENV === 'development') ? 'debug' : 'info',
-        format: myFormat(loggerName)
+        format: combine(splat(), myFormat(loggerName))
       }),
       new transports.File({
         level: (ENV === 'development') ? 'debug' : 'verbose',
-        format: myFormat(loggerName),
+        format: combine(splat(), myFormat(loggerName)),
         filename: path.resolve(dirPath, 'cloudpolis.log')
       })
     ]
   })
+  logger.stackTrace = function (message, err) {
+    if (err && err.stack) {
+      this.error(`%s %s`, message,
+        err.stack.length >= stackTraceLength ? err.stack.substring(0, stackTraceLength) + '...' : err.stack)
+    } else if (message && message.stack) {
+      this.error(
+        message.stack.length >= stackTraceLength ? message.stack.substring(0, stackTraceLength) + '...' : message.stack)
+    } else {
+      this.error('stackTrace: ' + message)
+    }
+  }
+  return logger
 }
 
 function prepareLogger (module) {

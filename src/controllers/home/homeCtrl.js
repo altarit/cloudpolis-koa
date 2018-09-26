@@ -1,5 +1,4 @@
-exports.index = async function (ctx, next) {
-  console.log('2222222222')
+exports.index = async function (ctx) {
   ctx.body = {
     status: 200,
     payload: {
@@ -8,7 +7,7 @@ exports.index = async function (ctx, next) {
   }
 }
 
-exports.inProgress = async function (ctx, next) {
+exports.inProgress = async function (ctx) {
   ctx.body = {
     status: 500,
     error: {

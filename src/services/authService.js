@@ -10,10 +10,8 @@ const refreshSecret = config.refreshToken.secret
 const refreshExpiresInMinutes = config.refreshToken.expiresInMinutes
 
 exports.generateTokensPair = async function (username) {
-  const now = Date.now()
-
-  const accessToken = await this.generateAccessToken(username, now)
-  const refreshToken = await this.generateRefreshToken(username, now)
+  const accessToken = await this.generateAccessToken(username)
+  const refreshToken = await this.generateRefreshToken(username)
 
   return {
     accessToken: accessToken,
@@ -21,7 +19,8 @@ exports.generateTokensPair = async function (username) {
   }
 }
 
-exports.generateRefreshToken = async function (username, now) {
+exports.generateRefreshToken = async function (username) {
+  const now = new Date();
   const refreshToken = new RefreshToken({
     created: now,
     expires: now + 60 * 1000 * refreshExpiresInMinutes,
@@ -33,24 +32,22 @@ exports.generateRefreshToken = async function (username, now) {
   return refreshToken
 }
 
-exports.generateAccessToken = async function (username, now) {
+exports.generateAccessToken = async function (username) {
   return jwt.sign({
-    created: now,
-    expires: now + 60 * 1000 * accessExpiresInMinutes,
     username: username
   }, accessSecret)
 }
 
 exports.renewAccessToken = async function (username, refreshToken) {
-  const now = Date.now()
-  const refreshTokenEntiry = await this.checkRefreshToken(username, refreshToken, now)
+  const refreshTokenEntiry = await this.checkRefreshToken(username, refreshToken)
   if (!refreshTokenEntiry) {
     throw new AuthError('Refresh token not found')
   }
-  return await this.generateAccessToken(username, now)
+  return await this.generateAccessToken(username)
 }
 
-exports.checkRefreshToken = async function (username, refreshToken, now) {
+exports.checkRefreshToken = async function (username, refreshToken) {
+  const now = new Date();
   const found = await RefreshToken.findOne({ username: username, token: refreshToken, isActive: true })
   if (found && found.token) {
     return refreshToken
@@ -61,7 +58,6 @@ exports.checkRefreshToken = async function (username, refreshToken, now) {
 
 exports.invalidateRefreshToken = async function (username, refreshToken) {
   log.debug(`invalidateRefreshToken for ${username}`)
-  const now = Date.now()
   const updated = await RefreshToken.update(
     { username: username, token: refreshToken, isActive: true },
     { isActive: false })
@@ -89,4 +85,3 @@ exports.verify = function (token) {
     //throw new HttpError(401, 'Not authorized');
   }
 }
-

@@ -26,26 +26,21 @@ function checkAccessTokenInfo (tokenInfo) {
     return false
   }
 
-  const { username, created } = tokenInfo
-  if (!username || !created) {
-    log.debug(`Access token doesn't have some required fields: username='${username}' created='${created}'.`)
+  const { username, iat } = tokenInfo
+  if (!username || !iat) {
+    log.debug(`Access token doesn't have some required fields: username='%s' iat='%s'.`, username, iat)
     return false
   }
 
-  const now = Date.now()
-  if (created < now) {
-    log.verbose(`Access token for user ${username} from the future'.`)
+  const now = Date.now() / 1000
+  if (iat > now) {
+    log.verbose(`Access token for user %s from the future'.`, username)
     return false
   }
 
-  if (now < created) {
-    log.verbose(`Access token for user ${username} from the future'.`)
-    return false
-  }
-
-  const expires = created + 60 * 1000 * accessExpiresInMinutes
+  const expires = iat + 60 * 1000 * accessExpiresInMinutes
   if (now > expires) {
-    log.verbose(`Access token for user ${username} has expired'.`)
+    log.verbose(`Access token for user %s has expired'.`, username)
   }
 
   return true
