@@ -1,22 +1,32 @@
 const log = require('src/lib/log')(module)
 
-module.exports = async function (ctx, next) {
-  ctx.set("Access-Control-Allow-Origin", "http://localhost:3000")
-  ctx.set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
-  ctx.set("Access-Control-Allow-Credentials", true)
-  ctx.set("Access-Control-Max-Age", '86400') // 24 hours
-  ctx.set("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Auth")
-  if (ctx.method === 'OPTIONS') {
-    // IE8 does not allow domains to be specified, just the *
-    // headers["Access-Control-Allow-Origin"] = req.headers.origin;
-    ctx.status = 200
-    ctx.body = 'hi'
-  }
-  ctx.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-  ctx.set('Expires', '-1')
-  ctx.set('Pragma', 'no-cache')
+const config = require('config')
 
-  log.debug('origin: ' + ctx.get('Origin'))
-  //this.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+const { http } = config
+const { cors, disableCache } = http
+const { enabled, origin } = cors
+
+module.exports = setParams
+
+async function setParams (ctx, next) {
+  if (enabled) {
+    ctx.set('Access-Control-Allow-Origin', origin)
+    ctx.set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
+    ctx.set('Access-Control-Allow-Credentials', true)
+    ctx.set('Access-Control-Max-Age', '86400') // 24 hours
+    ctx.set('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, ' +
+      'Auth', 'Refresh')
+    if (ctx.method === 'OPTIONS') {
+      ctx.status = 200
+      ctx.body = 'CORS'
+    }
+  }
+
+  if (disableCache) {
+    ctx.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
+    ctx.set('Expires', '-1')
+    ctx.set('Pragma', 'no-cache')
+  }
+
   await next()
 }

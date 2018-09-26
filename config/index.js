@@ -10,7 +10,12 @@ module.exports = {
   },
   "http": {
     "bodyLimitInKb": 2048,
-    "port": 3002
+    "port": 3002,
+    "disableCache": true,
+    "cors": {
+      "enabled": true,
+      "origin": "http://localhost:3000"
+    }
   },
   "logs": {
     "dirPath": "./logs/"
