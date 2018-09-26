@@ -9,7 +9,7 @@ module.exports = parseToken
 async function parseToken (ctx, next) {
   const token = ctx.headers['auth']
   if (token) {
-    const decoded = authService.verify(token)
+    const decoded = await authService.verifyAccessToken(token)
     if (checkAccessTokenInfo(decoded)) {
       ctx.request.user = {
         username: decoded.username
@@ -38,9 +38,10 @@ function checkAccessTokenInfo (tokenInfo) {
     return false
   }
 
-  const expires = iat + 60 * 1000 * accessExpiresInMinutes
+  const expires = iat + 60 * accessExpiresInMinutes
   if (now > expires) {
     log.verbose(`Access token for user %s has expired'.`, username)
+    return false
   }
 
   return true
