@@ -1,48 +1,56 @@
-const HttpError = require('src/lib/error/index').HttpError
-const log = require('src/lib/log')(module)
+const { HttpError } = require('src/lib/error')
 const musicService = require('src/services/musicService')
+const log = require('src/lib/log')(module)
 
-exports.index = async function (ctx, next) {
+exports.index = index
+exports.libraries = libraries
+exports.libraryDetails = libraryDetails
+exports.createLibrary = createLibrary
+exports.deleteLibrary = deleteLibrary
+exports.artists = artists
+exports.getArtistByName = getArtistByName
+
+exports.search = search
+exports.random = random
+exports.bySrc = bySrc
+exports.getTrackInfo = getTrackInfo
+exports.setTrackInfo = setTrackInfo
+exports.addToStat = addToStat
+exports.addSingleStat = addSingleStat
+
+async function index (ctx) {
   ctx.body = {
-    api: {
-      artists: '/api/music/artists',
-      artistsDetail: '/api/music/artists/:id',
-      random: 'api/music/random'
+    data: {
+      api: {
+        artists: '/api/music/artists',
+        artistsDetail: '/api/music/artists/:id',
+        random: 'api/music/random'
+      }
     }
   }
 }
 
-exports.search = async function (ctx) {
-  let query = ctx.request.query.query
-  const filteredSongs = await musicService.searchTracksByQuery(query)
-  ctx.body = { data: filteredSongs }
+/* ------------------------------ */
+/*           libraries            */
+/* ------------------------------ */
+
+async function libraries (ctx) {
+  const libraries = await musicService.getAllLibraries()
+  ctx.body = {
+    data: libraries
+  }
 }
 
-exports.bySrc = async function (ctx) {
-  let href = ctx.request.query.href
-  const song = await musicService.searchTrackByHref(href)
-  ctx.body = { data: song }
-  ctx.request.isLogNeeded = true
+async function libraryDetails (ctx) {
+  const libraryName = ctx.params.libraryName
+  const compilations = await musicService.getCompilationsByLibraryName(libraryName)
+  ctx.body = {
+    data: compilations
+  }
 }
 
-
-exports.addSingleStat = async function (ctx) {
-  ctx.body = {}
-}
-
-exports.libraries = async function (ctx) {
-  let libraries = await musicService.getAllLibraries()
-  ctx.body = { data: libraries }
-}
-
-exports.libraryDetails = async function (ctx) {
-  let libraryName = ctx.params.libraryName
-  let compilations = await musicService.getCompilationsByLibraryName(libraryName)
-  ctx.body = { data: compilations }
-}
-
-exports.createLibrary = async function (ctx) {
-  let libraryName = ctx.request.body.name
+async function createLibrary (ctx) {
+  const libraryName = ctx.request.body.name
   if (!libraryName) {
     log.debug('Parameter name is missed')
     throw new Error('Parameter name is missed')
@@ -51,56 +59,22 @@ exports.createLibrary = async function (ctx) {
   ctx.body = {}
 }
 
-exports.deleteLibrary = async function (ctx) {
+async function deleteLibrary (ctx) {
   let libraryName = ctx.params.libraryName
   let result = musicService.deleteLibrary(libraryName)
   ctx.body = {}
 }
 
-exports.artists = async function (ctx) {
+/* ------------------------------ */
+/*            artists             */
+/* ------------------------------ */
+
+async function artists (ctx) {
   let artists = await musicService.getAllArtists()
   ctx.body = { data: artists }
 }
 
-exports.getTrackInfo = async function (ctx) {
-  let trackId = ctx.params.trackId
-  let trackInfo = await musicService.getTrackInfo(trackId)
-  ctx.body = { data: trackInfo || {} }
-}
-
-exports.setTrackInfo = async function (ctx) {
-  let trackId = ctx.params.trackId
-  let lyrics = ctx.request.body.lyrics
-  let updated = await musicService.setTrackInfo(trackId, lyrics)
-  ctx.body = { result: 'ok' }
-}
-
-exports.createCompilationsBulk = async function (ctx) {
-  let libraryName = ctx.params.libraryName
-  let dataJson = ctx.request.body.tracks
-  let base = ctx.request.body.base
-
-
-  log.debug(libraryName + ':' + base)
-  let data = JSON.parse(dataJson)
-  if (!Array.isArray(data)) {
-    throw new HttpError(400, 'JSON should be an array')
-  }
-  if (!base) {
-    throw new HttpError(400, 'Base path is empty')
-  }
-  if (base[base.length - 1] !== '/') {
-    base += '/'
-  }
-
-  let result = musicService.createCompilationsBulk(libraryName, data, base)
-  ctx.body = {
-    result: result,
-    status: 200
-  }
-}
-
-exports.getArtistByName = async function (ctx) {
+async function getArtistByName (ctx) {
   console.log('id: ' + ctx.params.library + '/' + ctx.params.name)
   let artist = await musicService.getArtistByName(ctx.params.library, ctx.params.name)
   if (artist) {
@@ -114,23 +88,17 @@ exports.getArtistByName = async function (ctx) {
   }
 }
 
-/*
- {
- "dir" : "%FileDir",
- "filename": "%FileName",
- "ext": "%FileFormat",
- "parent": "%FileParentDir",
- "album": "%Album",
- "artist": "%Artist",
- "title": "%Title",
- "duration": "%Duration",
- "size": "%FileSize",
- "bitrate": "%Bitrate",
- "mark": "%Mark"
- },
- */
+/* ------------------------------ */
+/*             tracks             */
+/* ------------------------------ */
 
-exports.random = async function (ctx) {
+async function search (ctx) {
+  let query = ctx.request.query.query
+  const filteredSongs = await musicService.searchTracksByQuery(query)
+  ctx.body = { data: filteredSongs }
+}
+
+async function random (ctx) {
   let n = 15
   let filter = ctx.request.query.filter
   let condition = filter ? JSON.parse(filter) : { "library": { "$in": ["mlpost"] } }
@@ -140,25 +108,37 @@ exports.random = async function (ctx) {
   ctx.request.isLogNeeded = true
 }
 
-exports.extract = async function (ctx) {
-  let result = await musicService.extract()
-  ctx.body = { result: 200 }
+async function getTrackInfo (ctx) {
+  let trackId = ctx.params.trackId
+  let trackInfo = await musicService.getTrackInfo(trackId)
+  ctx.body = { data: trackInfo || {} }
 }
 
-exports.extractFromSources = async function (ctx) {
-  let result = await musicService.extractFromSources(ctx.params.library)
-  ctx.body = { result: 200 }
+async function bySrc (ctx) {
+  let href = ctx.request.query.href
+  const song = await musicService.searchTrackByHref(href)
+  ctx.body = { data: song }
+  ctx.request.isLogNeeded = true
 }
 
-exports.dropSongs = async function (ctx) {
-  await musicService.dropSongs()
-  ctx.body = { result: 200 }
+async function addSingleStat (ctx) {
+  ctx.body = {}
 }
 
-exports.addToStat = async function (ctx) {
+async function setTrackInfo (ctx) {
+  let trackId = ctx.params.trackId
+  let lyrics = ctx.request.body.lyrics
+  let updated = await musicService.setTrackInfo(trackId, lyrics)
+  ctx.body = { result: 'ok' }
+}
+
+async function addToStat (ctx) {
   let title = ctx.request.query.title
   let compilation = ctx.request.query.comp
   await musicService.addToStat(title, compilation)
   ctx.body = { result: 201 }
 }
 
+/* ------------------------------ */
+/*             other              */
+/* ------------------------------ */

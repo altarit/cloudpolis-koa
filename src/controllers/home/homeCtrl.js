@@ -1,7 +1,7 @@
 exports.index = async function (ctx) {
   ctx.body = {
     status: 200,
-    payload: {
+    data: {
       message: 'Hello Everypony!!!'
     }
   }

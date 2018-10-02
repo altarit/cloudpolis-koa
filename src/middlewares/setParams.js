@@ -15,7 +15,7 @@ async function setParams (ctx, next) {
     ctx.set('Access-Control-Allow-Credentials', true)
     ctx.set('Access-Control-Max-Age', '86400') // 24 hours
     ctx.set('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, ' +
-      'Auth', 'Refresh')
+      'Auth, Refresh')
     if (ctx.method === 'OPTIONS') {
       ctx.status = 200
       ctx.body = 'CORS'

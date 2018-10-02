@@ -1,10 +1,15 @@
-const HttpError = require('src/lib/error/index').HttpError
-const log = require('src/lib/log')(module)
+const { HttpError } = require('src/lib/error')
 const playlistService = require('src/services/playlistService')
+const log = require('src/lib/log')(module)
 
+exports.playlists = playlists
+exports.playlistsByOwner = playlistsByOwner
+exports.playlistDetails = playlistDetails
+exports.updatePlaylist = updatePlaylist
+exports.deletePlaylist = deletePlaylist
 
-exports.playlists = async function (ctx) {
-  let playlists = await playlistService.getAllPlaylists()
+async function playlists (ctx) {
+  const playlists = await playlistService.getAllPlaylists()
   ctx.body = {
     data: {
       playlists: playlists
@@ -12,9 +17,9 @@ exports.playlists = async function (ctx) {
   }
 }
 
-exports.playlistsByOwner = async function (ctx) {
-  let userName = ctx.params.owner
-  let playlists = await playlistService.getPlaylistsByOwner(userName)
+async function playlistsByOwner (ctx) {
+  const userName = ctx.params.owner
+  const playlists = await playlistService.getPlaylistsByOwner(userName)
   ctx.body = {
     data: {
       playlists: playlists
@@ -22,10 +27,10 @@ exports.playlistsByOwner = async function (ctx) {
   }
 }
 
-exports.playlistDetails = async function (ctx) {
-  let userName = ctx.params.owner
-  let playlistName = ctx.params.name
-  let playlist = await playlistService.getPlaylistDetails(userName, playlistName)
+async function playlistDetails (ctx) {
+  const userName = ctx.params.owner
+  const playlistName = ctx.params.name
+  const playlist = await playlistService.getPlaylistDetails(userName, playlistName)
   ctx.body = {
     data: {
       playlist: playlist
@@ -33,27 +38,26 @@ exports.playlistDetails = async function (ctx) {
   }
 }
 
-exports.updatePlaylist = async function (ctx) {
-  let userName = ctx.params.owner
-  let playlistName = ctx.params.name
-  log.debug(`Put playlist /${userName}/${playlistName}`)
+async function updatePlaylist (ctx) {
+  const userName = ctx.params.owner
+  const playlistName = ctx.params.name
+  log.debug(`Put playlist /%s/%s`, userName, playlistName)
 
-  let tracks = ctx.request.body.playlist.tracks
+  const tracks = ctx.request.body.playlist.tracks
   if (!Array.isArray(tracks)) {
     throw new HttpError(400, 'Tracks should be an array')
   }
 
-  let playlist = await playlistService.updatePlaylist(userName, playlistName, tracks)
+  const playlist = await playlistService.updatePlaylist(userName, playlistName, tracks)
   ctx.body = {
     status: 200
   }
 }
 
-
-exports.deletePlaylist = async function (ctx) {
-  let userName = ctx.params.owner
-  let playlistName = ctx.params.name
-  log.debug(`Delete playlist /${userName}/${playlistName}`)
+async function deletePlaylist (ctx) {
+  const userName = ctx.params.owner
+  const playlistName = ctx.params.name
+  log.debug(`Delete playlist /%s/%s`, userName, playlistName)
 
   let playlist = await playlistService.deletePlaylist(userName, playlistName)
   ctx.body = {

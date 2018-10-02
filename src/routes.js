@@ -31,17 +31,18 @@ router.get('music/libraries', require('./controllers/music/musicCtrl').libraries
 router.get('music/libraries/:libraryName', require('./controllers/music/musicCtrl').libraryDetails)
 router.post('music/libraries', checkAdmin, require('./controllers/music/musicCtrl').createLibrary)
 router.delete('music/libraries/:libraryName', checkAdmin, require('./controllers/music/musicCtrl').deleteLibrary)
-router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/music/musicCtrl').createCompilationsBulk)
 router.get('music/artists', require('./controllers/music/musicCtrl').artists)
 router.get('music/artists/:library/:name', require('./controllers/music/musicCtrl').getArtistByName)
 router.get('music/search', require('./controllers/music/musicCtrl').search)
 router.get('music/random', require('./controllers/music/musicCtrl').random)
 router.get('music/songs', require('./controllers/music/musicCtrl').bySrc)
-router.post('music/extract', checkAdmin, require('./controllers/music/musicCtrl').extract)
-router.delete('music/songs', checkAdmin, require('./controllers/music/musicCtrl').dropSongs)
 router.get('music/stats/single', require('./controllers/music/musicCtrl').addSingleStat)
 router.get('music/tracks/:trackId', require('./controllers/music/musicCtrl').getTrackInfo)
 router.put('music/tracks/:trackId', require('./controllers/music/musicCtrl').setTrackInfo)
+// CRM
+router.post('music/extract', checkAdmin, require('./controllers/music/musicCRMCtrl').extract)
+router.delete('music/songs', checkAdmin, require('./controllers/music/musicCRMCtrl').dropSongs)
+router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/music/musicCRMCtrl').createCompilationsBulk)
 
 // Playlists
 router.get('music/playlists', require('./controllers/music/playlistsCtrl').playlists)

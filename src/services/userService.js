@@ -1,5 +1,7 @@
 const { User } = require('src/models/user')
+const UserDto = require('src/dto/UserDto')
 const { AuthError } = require('src/lib/error')
+const log = require('src/lib/log')(module)
 
 exports.authorize = authorize
 exports.register = register
@@ -37,7 +39,7 @@ async function register (username, password, email, additional) {
       additional: additional
     })
     await user.save()
-    return this.cutExtraFields(user)
+    return new UserDto(user)
   }
 }
 
@@ -55,21 +57,20 @@ async function edit (username, oldPassword, newPassword, email, additional) {
   validateUserInfo(null, null, email, additional)
   user.additional = additional
   await user.save()
-  return User.cutExtraFields(user)
+  return new UserDto(user)
 }
 
 async function getList () {
   return await User.find({}, {
     _id: false,
     username: true,
-    created: true,
-    additional: true
+    created: true
   })
 }
 
 async function getDetails (name) {
   const user = await findOneByName(name)
-  return this.cutExtraFields(user)
+  return new UserDto(user)
 }
 
 /* private methods */
@@ -100,12 +101,4 @@ async function addRole (username, role) {
   }, {
     $addToSet: { roles: role }
   })
-}
-
-function cutExtraFields (user) {
-  return {
-    username: user.username,
-    created: user.created,
-    additional: user.additional
-  }
 }
