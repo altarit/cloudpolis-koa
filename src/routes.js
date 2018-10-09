@@ -45,6 +45,9 @@ router.post('music/extract', checkAdmin, require('./controllers/music/musicCRMCt
 router.delete('music/songs', checkAdmin, require('./controllers/music/musicCRMCtrl').dropSongs)
 router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/music/musicCRMCtrl').createCompilationsBulk)
 
+// Path
+router.post('path/dir', require('./controllers/path/pathCtrl').getDir)
+
 // Playlists
 router.get('music/playlists', require('./controllers/music/playlistsCtrl').playlists)
 router.get('music/playlists/:owner', require('./controllers/music/playlistsCtrl').playlistsByOwner)
