@@ -10,9 +10,6 @@ let schema = new mongoose.Schema({
   token: {
     type: String
   },
-  expires: {
-    type: Date
-  },
   username: {
     type: String
   },
@@ -22,7 +19,3 @@ let schema = new mongoose.Schema({
 })
 
 exports.RefreshToken = mongoose.model('RefreshToken', schema)
-
-
-
-

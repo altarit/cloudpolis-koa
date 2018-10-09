@@ -1,22 +1,35 @@
-const HttpError = require('src/lib/error/index').HttpError
-const AuthError = require('src/lib/error/AuthError').AuthError
-const log = require('src/lib/log')(module)
-const UserService = require('src/services/userService')
+const { HttpError, AuthError } = require('src/lib/error')
+const userService = require('src/services/userService')
 const authService = require('src/services/authService')
 
-exports.auth = async function (ctx, next) {
-  console.log('!!! auth !!!')
-  let req = ctx.request
-  let username = req.body.username ? req.body.username.trim() : ''
-  let password = req.body.password ? req.body.password.trim() : ''
-  let email = req.body.email ? req.body.email.trim() : ''
-  let additional = req.body.additional ? req.body.additional.trim() : ''
-  let registration = req.body.isreg
+exports.check = check
+exports.auth = auth
+exports.renewAccessToken = renewAccessToken
+exports.renewTokenPair = renewTokenPair
+exports.logout = logout
+
+async function check (ctx) {
+  const { user } = ctx.request
+
+  if (user) {
+    const { username } = user
+    ctx.body = {
+      data: {
+        username
+      }
+    }
+  } else {
+    throw new HttpError(401, 'Not authorized')
+  }
+}
+
+async function auth (ctx) {
+  const { username = '', password = '', email = '', additional = '', isreg = false } = ctx.request.body
 
   try {
-    let user = registration
-      ? await UserService.register(username, password, email, additional)
-      : await UserService.authorize(username, password)
+    let user = isreg
+      ? await userService.register(username.trim(), password.trim(), email.trim(), additional.trim())
+      : await userService.authorize(username, password)
     const tokenPair = await authService.generateTokensPair(user.username)
     ctx.body = {
       data: {
@@ -34,11 +47,10 @@ exports.auth = async function (ctx, next) {
   }
 }
 
-exports.renewAccessToken = async function (ctx, next) {
-  const body = ctx.request.body
+async function renewAccessToken (ctx) {
+  const { body } = ctx.request
   const { username } = body
   const refreshToken = ctx.headers['refresh']
-
 
   try {
     const accessToken = await authService.renewAccessToken(username, refreshToken)
@@ -56,7 +68,7 @@ exports.renewAccessToken = async function (ctx, next) {
   }
 }
 
-exports.renewTokenPair = async function (ctx, next) {
+async function renewTokenPair (ctx) {
   const body = ctx.request.body
   const { username } = body
   const refreshToken = ctx.headers['refresh']
@@ -78,25 +90,21 @@ exports.renewTokenPair = async function (ctx, next) {
   }
 }
 
-exports.check = async function (ctx, next) {
-  if (ctx.request.user) {
-    const username = ctx.request.user.username
-    const token = authService.sign({
-      username: username
-    })
-    //ctx.set("Auth", token);
+async function logout (ctx) {
+  const { username } = body
+  const refreshToken = ctx.headers['refresh']
+  try {
+    await authService.invalidateRefreshToken(username, refreshToken)
     ctx.body = {
       data: {
-        username
+        success: true
       }
     }
-  } else {
-    throw new HttpError(401, 'Not authorized')
+  } catch (err) {
+    if (err instanceof AuthError) {
+      throw new HttpError(401, err.message)
+    } else {
+      throw err
+    }
   }
-}
-
-exports.logout = async function (ctx, next) {
-  let sid = ctx.sessionId
-  ctx.session = null
-  ctx.body = { result: true }
 }

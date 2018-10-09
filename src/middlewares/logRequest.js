@@ -1,17 +1,21 @@
-const Request = require('src/models/request').Request
+const { Request } = require('src/models/request')
+
 const log = require('src/lib/log')(module)
 
 module.exports = async function (ctx, next) {
-  let start = new Date()
+  const now = Date.now()
+
   await next()
 
-  let responseTime = new Date() - start
-  log.debug('--> %s %s %sms %s', ctx.method, ctx.request.url, responseTime, ctx.response.status)
+  const responseTime = Date.now() - now
+  const { method, request, response } = ctx
+  const { url, headers, user, ip } = request
 
-  let url = ctx.request.url
-  let paramsPos = url.indexOf('?')
+  log.debug('--> %s %s %sms %s', method, url, responseTime, response.status)
+
+  const paramsPos = url.indexOf('?')
   let path, query
-  if (paramsPos !== -1) {
+  if (paramsPos >= 0) {
     path = url.substring(0, paramsPos)
     if (paramsPos + 1 < url.length) {
       query = url.substr(paramsPos + 1)
@@ -20,18 +24,17 @@ module.exports = async function (ctx, next) {
     path = url
   }
 
-  let request = new Request({
+  const record = new Request({
     path: path,
     query: query,
-    user: ctx.request.user ? ctx.request.user.username : null,
+    user: user && user.username,
     session: ctx.sessionId,
-    ip: ctx.request.headers['x-real-ip'] || ctx.request.ip,
-    agent: ctx.request.headers['user-agent'],
-    referer: ctx.request.headers['referer'],
+    ip: headers['x-real-ip'] || ip,
+    agent: headers['user-agent'],
+    referer: headers['referer'],
     time: responseTime,
-    status: ctx.response.status,
+    status: response.status,
   })
 
-  request.save()
+  record.save()
 }
-

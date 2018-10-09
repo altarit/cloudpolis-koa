@@ -1,19 +1,25 @@
 const jwt = require('jsonwebtoken')
-const config = require('config/index')
-const RefreshToken = require('src/models/refreshToken').RefreshToken
-const AuthError = require('src/lib/error/AuthError').AuthError
+const { RefreshToken } = require('src/models/refreshToken')
+const { AuthError } = require('src/lib/error')
 const log = require('src/lib/log')(module)
 
+const config = require('config/index')
 const accessSecret = config.accessToken.secret
-const accessExpiresInMinutes = config.accessToken.expiresInMinutes
 const refreshSecret = config.refreshToken.secret
 const refreshExpiresInMinutes = config.refreshToken.expiresInMinutes
 
-exports.generateTokensPair = async function (username) {
-  const now = Date.now()
+exports.generateTokensPair = generateTokensPair
+exports.renewTokenPair = renewTokenPair
+exports.generateAccessToken = generateAccessToken
+exports.renewAccessToken = renewAccessToken
+exports.verifyAccessToken = verifyAccessToken
+exports.invalidateRefreshToken = invalidateRefreshToken
 
-  const accessToken = await this.generateAccessToken(username, now)
-  const refreshToken = await this.generateRefreshToken(username, now)
+/* public methods */
+
+async function generateTokensPair (username) {
+  const accessToken = await generateAccessToken(username)
+  const refreshToken = await generateRefreshToken(username)
 
   return {
     accessToken: accessToken,
@@ -21,10 +27,55 @@ exports.generateTokensPair = async function (username) {
   }
 }
 
-exports.generateRefreshToken = async function (username, now) {
+async function renewTokenPair (username, refreshToken) {
+  await invalidateRefreshToken(username, refreshToken)
+  return await generateTokensPair(username)
+}
+
+async function generateAccessToken (username) {
+  return jwt.sign({
+    username: username
+  }, accessSecret)
+}
+
+async function renewAccessToken (username, refreshToken) {
+  const refreshTokenEntiry = await checkRefreshToken(username, refreshToken)
+  if (!refreshTokenEntiry) {
+    throw new AuthError('Refresh token not found')
+  }
+  return await this.generateAccessToken(username)
+}
+
+async function verifyAccessToken (token) {
+  try {
+    return jwt.verify(token, accessSecret)
+  } catch (e) {
+    log.error(`Error at verifying jwt token`, e)
+    return null
+  }
+}
+
+async function invalidateRefreshToken (username, refreshToken) {
+  log.debug(`invalidateRefreshToken for ${username}`)
+  const updated = await RefreshToken.update({
+    username: username,
+    token: refreshToken,
+    isActive: true
+  }, {
+    isActive: false
+  })
+  if (!updated.n) {
+    throw new AuthError(`Refresh token is not valid or expired`)
+  }
+  log.debug(`Deactivated refresh token`)
+}
+
+/* private methods */
+
+async function generateRefreshToken (username) {
+  const now = new Date()
   const refreshToken = new RefreshToken({
     created: now,
-    expires: now + 60 * 1000 * refreshExpiresInMinutes,
     username: username,
     token: 'token-' + now + '-' + Math.random(),
     isActive: true
@@ -33,60 +84,16 @@ exports.generateRefreshToken = async function (username, now) {
   return refreshToken
 }
 
-exports.generateAccessToken = async function (username, now) {
-  return jwt.sign({
-    created: now,
-    expires: now + 60 * 1000 * accessExpiresInMinutes,
-    username: username
-  }, accessSecret)
-}
-
-exports.renewAccessToken = async function (username, refreshToken) {
-  const now = Date.now()
-  const refreshTokenEntiry = await this.checkRefreshToken(username, refreshToken, now)
-  if (!refreshTokenEntiry) {
-    throw new AuthError('Refresh token not found')
-  }
-  return await this.generateAccessToken(username, now)
-}
-
-exports.checkRefreshToken = async function (username, refreshToken, now) {
-  const found = await RefreshToken.findOne({ username: username, token: refreshToken, isActive: true })
+async function checkRefreshToken (username, refreshToken) {
+  const now = new Date()
+  const found = await RefreshToken.findOne({
+    username: username,
+    token: refreshToken,
+    isActive: true
+  })
   if (found && found.token) {
     return refreshToken
   } else {
     return null
   }
 }
-
-exports.invalidateRefreshToken = async function (username, refreshToken) {
-  log.debug(`invalidateRefreshToken for ${username}`)
-  const now = Date.now()
-  const updated = await RefreshToken.update(
-    { username: username, token: refreshToken, isActive: true },
-    { isActive: false })
-  if (!updated.n) {
-    throw new AuthError(`Refresh token is not valid or expired`)
-  }
-  log.debug(`Deactivated refresh token`)
-}
-
-exports.renewTokenPair = async function (username, refreshToken) {
-  await this.invalidateRefreshToken(username, refreshToken)
-  return await this.generateTokensPair(username)
-}
-
-exports.sign = function (obj) {
-  return jwt.sign(obj, accessSecret)
-}
-
-exports.verify = function (token) {
-  try {
-    return jwt.verify(token, accessSecret)
-  } catch (e) {
-    log.error(`Error at verifying jwt token`, e)
-    return null
-    //throw new HttpError(401, 'Not authorized');
-  }
-}
-
