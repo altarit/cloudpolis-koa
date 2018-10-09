@@ -1,12 +1,17 @@
 module.exports = {
-  "secret": "replace_me",
+  "secret": "secret_replace_me",
+  "users": [{
+    "username": "admin",
+    "password": "1",
+    "roles": ["admin"]
+  }],
   "accessToken": {
-    "expiresInMinutes": 10,
-    "secret": "access_replace"
+    "expiresInMinutes": 60,
+    "secret": "access_replace_me"
   },
   "refreshToken": {
-    "expiresInMinutes": 30,
-    "secret": "refresh_replace"
+    "expiresInMinutes": 300,
+    "secret": "refresh_replace_me"
   },
   "http": {
     "bodyLimitInKb": 2048,
@@ -34,4 +39,4 @@ module.exports = {
       }
     }
   },
-};
+}

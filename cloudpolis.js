@@ -4,6 +4,7 @@ const bodyParser = require('koa-bodyparser')
 const router = require('koa-router')()
 
 const config = require('./config/index')
+const initialize = require('./src/lib/initialize')
 const routes = require('./src/routes')
 
 const log = require('src/lib/log').prepareLogger('cloudpolis.js')
@@ -23,6 +24,13 @@ app.use(require('./src/middlewares/setParams'))
 router.use('/api/', routes.routes())
 app.use(router.routes())
 
-app.listen(port, (cb) => {
-  log.debug(`Server is up & running on ${port} port.`)
-})
+initialize()
+  .then(res => {
+    log.debug(`Starting the server...`)
+    app.listen(port, (cb) => {
+      log.debug(`Server is up & running on ${port} port.`)
+    })
+  })
+  .catch(err => {
+    log.stackTrace(`Error at initializing the app.`, err)
+  })

@@ -2,7 +2,7 @@ const router = require('koa-router')()
 const checkRoles = require('./middlewares/checkRoles')
 
 const checkAuth = checkRoles()
-const checkAdmin = checkRoles('Q')
+const checkAdmin = checkRoles('admin')
 
 // Home
 router.get('', require('./controllers/home/homeCtrl').index)
@@ -39,6 +39,7 @@ router.get('music/songs', require('./controllers/music/musicCtrl').bySrc)
 router.get('music/stats/single', require('./controllers/music/musicCtrl').addSingleStat)
 router.get('music/tracks/:trackId', require('./controllers/music/musicCtrl').getTrackInfo)
 router.put('music/tracks/:trackId', require('./controllers/music/musicCtrl').setTrackInfo)
+
 // CRM
 router.post('music/extract', checkAdmin, require('./controllers/music/musicCRMCtrl').extract)
 router.delete('music/songs', checkAdmin, require('./controllers/music/musicCRMCtrl').dropSongs)
