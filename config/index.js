@@ -6,11 +6,11 @@ module.exports = {
     "roles": ["admin"]
   }],
   "accessToken": {
-    "expiresInMinutes": 60,
+    "expiresInMinutes": 60000,
     "secret": "access_replace_me"
   },
   "refreshToken": {
-    "expiresInMinutes": 300,
+    "expiresInMinutes": 300000,
     "secret": "refresh_replace_me"
   },
   "http": {
@@ -27,7 +27,7 @@ module.exports = {
   },
   "mongoose": {
     "host": "127.0.0.1",
-    "port": 27017,
+    "port": 27117,
     "database": "cloudpolis",
     "username": "",
     "password": "password",
