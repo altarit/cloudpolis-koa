@@ -27,9 +27,9 @@ module.exports = {
   },
   "mongoose": {
     "host": "127.0.0.1",
-    "port": 27117,
-    "database": "cloudpolis",
-    "username": "",
+    "port": 2017,
+    "database": "",
+    "username": "user",
     "password": "password",
     "options": {
       "server": {

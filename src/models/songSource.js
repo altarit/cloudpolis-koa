@@ -1,33 +1,37 @@
 const mongoose = require('src/lib/mongoose')
 
 const schema = new mongoose.Schema({
-  id: {
+  preId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
+  },
+  importSession: {
+    type: String,
+    required: true
   },
   library: {
     type: String,
     required: true
   },
   compilation: {
-    type: String,
-    required: true
+    type: String
   },
   title: {
     type: String,
     requred: true
   },
-  artist: {
-    type: String,
-    required: true
-  },
   album: {
+    type: String
+  },
+  coauthors: {
     type: String
   },
   src: {
     type: String,
     requred: true
+  },
+  sources: {
+    typ: Object,
   },
   duration: {
     type: String

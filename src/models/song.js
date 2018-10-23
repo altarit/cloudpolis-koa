@@ -25,7 +25,10 @@ const schema = new mongoose.Schema({
   src: {
     type: String,
     requred: true,
-    unique: true
+    //unique: true
+  },
+  sources: {
+    typ: Object,
   },
   duration: {
     type: String
