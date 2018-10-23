@@ -2,12 +2,25 @@ const { HttpError, AuthError } = require('src/lib/error/index')
 const userService = require('src/services/userService')
 const authService = require('src/services/authService')
 
-exports.check = check
-exports.auth = auth
+exports.params = {
+  base: ''
+}
+
 exports.renewAccessToken = renewAccessToken
 exports.renewTokenPair = renewTokenPair
-exports.logout = logout
 
+exports.check = {
+  path: 'hi',
+  schema: {},
+  method: 'get',
+  handler: check
+}
+
+/**
+ *
+ * @param ctx
+ * @returns {Promise<void>}
+ */
 async function check (ctx) {
   const { user } = ctx.request
 
@@ -21,6 +34,22 @@ async function check (ctx) {
   } else {
     throw new HttpError(401, 'Not authorized')
   }
+}
+
+
+exports.login = {
+  path: 'login',
+  schema: {
+    'username': {
+      'type': 'string'
+    },
+    'password': {
+      'type': 'string'
+    }
+  },
+  required: ['username', 'password'],
+  method: 'post',
+  handler: auth
 }
 
 async function auth (ctx) {
@@ -90,8 +119,27 @@ async function renewTokenPair (ctx) {
   }
 }
 
+exports.logout = {
+  path: 'logout',
+  schema: {
+    'username': {
+      'type': 'string'
+    },
+    'password': {
+      'type': 'string'
+    }
+  },
+  required: ['username'],
+  method: 'post',
+  handler: logout
+}
+
+/**
+ * Removes current user auth data from server.
+ *
+ */
 async function logout (ctx) {
-  const { username } = body
+  const { username } = ctx.request.body
   const refreshToken = ctx.headers['refresh']
   try {
     await authService.invalidateRefreshToken(username, refreshToken)

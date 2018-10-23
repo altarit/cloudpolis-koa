@@ -1,21 +1,33 @@
-const fs = require('fs')
-const path = require('path')
-
 const pathService = require('src/services/pathService')
-const { HttpError, AuthError } = require('src/lib/error/index')
 const log = require('src/lib/log')(module)
 
-exports.getDir = getDir
-exports.checkAvailability = checkAvailability
+exports.params = {
+  base: 'path/'
+}
+
+exports.getDir = {
+  path: 'dir',
+  schema: {
+    'mainPath': {
+      'type': 'string'
+    },
+    'secondPath': {
+      'type': 'string'
+    }
+  },
+  required: ['mainPath'],
+  method: 'post',
+  handler: getDir
+}
 
 /**
  * Provides file system navigation.
  *
- * @bodyParam mainPath    full path to the directory
- * @bodyParam secondPath  relative path for mainPath parameter. Optional
- * @response  path        full path to the directory
- * @response  files       files and directories contained in the directory
- * @response  drives      available disk drives and mount points
+ * @bodyParam mainPath    string - full path to the directory
+ * @bodyParam secondPath  string - relative path for mainPath parameter. Optional
+ * @response  path        string - full path to the directory
+ * @response  files       arrayOf() - files and directories contained in the directory
+ * @response  drives      arrayOf({name:string}) - available disk drives and mount points
  */
 async function getDir (ctx) {
   const { mainPath = __dirname, secondPath = '.' } = ctx.request.body
@@ -31,6 +43,21 @@ async function getDir (ctx) {
   }
 }
 
+exports.checkAvailability = {
+  path: 'availability',
+  schema: {
+    'importPath': {
+      'type': 'string'
+    },
+    'networkPath': {
+      'type': 'string'
+    }
+  },
+  required: ['importPath', 'networkPath'],
+  method: 'post',
+  handler: checkAvailability
+}
+
 /**
  * Checks either files in {importPath} directory can be accessed with {networkPath} uri
  *
@@ -39,7 +66,7 @@ async function getDir (ctx) {
  * @response  result      results
  */
 async function checkAvailability (ctx) {
-  const { importPath = __dirname, networkPath = '' } = ctx.request.body
+  const { importPath = __dirname, networkPath } = ctx.request.body
 
   const result = await pathService.checkAvailability(importPath, networkPath)
 

@@ -5,7 +5,7 @@ const router = require('koa-router')()
 
 const config = require('./config/index')
 const initialize = require('./src/lib/initialize')
-const routes = require('./src/routes')
+const findRoutes = require('./src/lib/pathfinder')
 
 const log = require('src/lib/log').prepareLogger('cloudpolis.js')
 
@@ -21,6 +21,7 @@ app.use(require('./src/middlewares/logRequest'))
 app.use(require('./src/middlewares/sendHttpError'))
 app.use(require('./src/middlewares/setParams'))
 
+const routes = findRoutes()
 router.use('/api/', routes.routes())
 app.use(router.routes())
 

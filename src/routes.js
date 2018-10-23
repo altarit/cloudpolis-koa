@@ -8,7 +8,6 @@ const checkAdmin = checkRoles('admin')
 router.get('', require('./controllers/homeCtrl').index)
 
 // Auth
-router.get('hi', require('./controllers/authCtrl').check)
 router.post('access', require('./controllers/authCtrl').renewAccessToken)
 router.post('pair', require('./controllers/authCtrl').renewTokenPair)
 router.post('login', require('./controllers/authCtrl').auth)
@@ -44,10 +43,6 @@ router.put('music/tracks/:trackId', require('./controllers/musicCtrl').setTrackI
 // router.post('music/extract', checkAdmin, require('./controllers/old/musicCRMCtrl').extract)
 // router.delete('music/songs', checkAdmin, require('./controllers/old/musicCRMCtrl').dropSongs)
 // router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/old/musicCRMCtrl').createCompilationsBulk)
-
-// Path
-router.post('path/dir', require('./controllers/pathCtrl').getDir)
-router.post('path/availability', require('./controllers/pathCtrl').checkAvailability)
 
 // Manager
 //router.post('manager/libraries/:libraryName/mountpoints', require('./controllers/path/pathCtrl').add)
