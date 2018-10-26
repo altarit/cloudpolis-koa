@@ -28,5 +28,14 @@ async function setParams (ctx, next) {
     ctx.set('Pragma', 'no-cache')
   }
 
+  ctx.end = end
   await next()
+}
+
+function end (payload) {
+  if (payload) {
+    this.body = {
+      data: payload
+    }
+  }
 }

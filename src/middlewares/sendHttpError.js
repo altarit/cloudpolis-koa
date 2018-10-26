@@ -7,7 +7,7 @@ module.exports = async function (ctx, next) {
     const errTypeof = typeof err
 
     if (errTypeof !== 'object') {
-      log.info(`Error '%s' typeof '%s'. Investigate and fix it.`, err, errTypeof)
+      log.warn(`Error '%s' typeof '%s'. Investigate and fix it.`, err, errTypeof)
       ctx.response.status = 500
       ctx.body = {
         status: 500,
@@ -16,6 +16,9 @@ module.exports = async function (ctx, next) {
         }
       }
       return
+    }
+    if (!(err instanceof Error)) {
+      log.warn(`Error '%s' is not instance of Error. Investigate and fix it.`, err)
     }
 
     log.stackTrace(`sendHttpError [${err.status}/${err.code || 0}]:`, err)

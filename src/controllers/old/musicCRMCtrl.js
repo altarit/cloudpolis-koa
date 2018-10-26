@@ -1,5 +1,5 @@
 const { HttpError } = require('src/lib/error/index')
-const musicCRMService = require('src/services/musicCRMService')
+const musicCRMService = require('src/services/musicCRMService.old')
 const log = require('src/lib/log')(module)
 
 exports.createCompilationsBulk = createCompilationsBulk

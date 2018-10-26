@@ -3,25 +3,29 @@ services:
 
   mongo:
     image: mongo:3.6
-    container_name: mongo
-    #environment:
-    #  - MONGO_INITDB_ROOT_USERNAME=root
-    ##  - MONGO_INITDB_ROOT_PASSWORD=password
+    container_name: database
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - "mongodata:/data/db"
+      #- "./config/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
     ports:
-      - 27017:27017
+      - "2017:27017"
+    command: mongod
 
   nginx:
-    image: nginx
+    image: nginx:1.15.4
+    container_name: static
     volumes:
-    - ./config/nginx.dev.conf:/etc/nginx/conf.d/dev.conf
+      - ./config/dev.nginx.conf:/etc/nginx/nginx.conf
+      - ./logs/nginx:/var/log/nginx
+      - "F:/docs/music/mlp/My Little Pony Ost/mlpost:/docs/music/mlpost"
+      - "D:/Documents/Music/MAv16/Artists:/docs/music/mlpfa"
+      #- "/home/tia/docs/music:/docs/music"
     ports:
-    - "8080:80"
-    environment:
-    #- NGINX_HOST=foobar.com
-    #- NGINX_PORT=80
-    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/dev.conf > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+      - "2012:80"
+    command: nginx -g 'daemon off;'
 
 volumes:
   mongodata:

@@ -72,7 +72,7 @@ async function createLibrary (libraryName) {
 
 async function deleteLibrary (libraryName) {
   const library = await Library.findOne({ name: libraryName })
-  let result = await library.remove().exec()
+  const result = await library.remove().exec()
   return result
 }
 
@@ -106,9 +106,9 @@ async function random (condition, max) {
 
 async function addToStat (title, compilation) {
   /*var record = new MusicStat({
-   song: title,
-   compilation: compilation,
-   user: ctx.request.user ? ctx.request.user._doc.username : null,
+   song: title,pilation,
+   user: ctx.reque
+   compilation: comst.user ? ctx.request.user._doc.username : null,
    session: ctx.sessionId,
    ip: ctx.request.headers['x-real-ip'] || ctx.request.ip,
    referer: ctx.request.headers['referer']
