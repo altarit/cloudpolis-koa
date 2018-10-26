@@ -7,70 +7,71 @@ exports.params = {
 
 exports.getDir = {
   path: 'dir',
-  schema: {
-    'mainPath': {
-      'type': 'string'
+  requestSchema: {
+    properties: {
+      'mainPath': {
+        'type': 'string'
+      },
+      'secondPath': {
+        'type': 'string'
+      }
     },
-    'secondPath': {
-      'type': 'string'
-    }
+    required: ['mainPath']
   },
-  required: ['mainPath'],
   method: 'post',
+  responseSchema: {},
   handler: getDir
 }
 
 /**
  * Provides file system navigation.
  *
- * @bodyParam mainPath    string - full path to the directory
- * @bodyParam secondPath  string - relative path for mainPath parameter. Optional
- * @response  path        string - full path to the directory
- * @response  files       arrayOf() - files and directories contained in the directory
- * @response  drives      arrayOf({name:string}) - available disk drives and mount points
+ * @bodyParam mainPath    full path to the directory.
+ * @bodyParam secondPath  relative path for {mainPath} parameter. Optional.
+ * @response  path        full path to the directory.
+ * @response  files       files and directories contained in the directory.
+ * @response  drives      available disk drives and mount points.
  */
 async function getDir (ctx) {
   const { mainPath = __dirname, secondPath = '.' } = ctx.request.body
 
   const result = await pathService.getDir(mainPath, secondPath)
 
-  ctx.body = {
-    data: {
-      path: result.path,
-      files: result.files,
-      drives: result.drives
-    }
-  }
+  ctx.end({
+    path: result.path,
+    files: result.files,
+    drives: result.drives
+  })
 }
 
 exports.checkAvailability = {
   path: 'availability',
-  schema: {
-    'importPath': {
-      'type': 'string'
+  requestSchema: {
+    properties: {
+      'importPath': {
+        'type': 'string'
+      },
+      'networkPath': {
+        'type': 'string'
+      }
     },
-    'networkPath': {
-      'type': 'string'
-    }
+    required: ['importPath', 'networkPath']
   },
-  required: ['importPath', 'networkPath'],
   method: 'post',
   handler: checkAvailability
 }
 
 /**
- * Checks either files in {importPath} directory can be accessed with {networkPath} uri
+ * Checks either files in {importPath} directory can be accessed with {networkPath} uri.
  *
- * @bodyParam importPath  full path to a directory
- * @bodyParam networkPath uri to the server that provides static files
- * @response  result      results
+ * @bodyParam importPath  full path to a directory.
+ * @bodyParam networkPath uri to the server that provides static files.
+ * @response  result      results.
  */
 async function checkAvailability (ctx) {
   const { importPath = __dirname, networkPath } = ctx.request.body
 
   const result = await pathService.checkAvailability(importPath, networkPath)
 
-  ctx.body = {
-    data: result
-  }
+  ctx.end(result)
 }

@@ -1,7 +1,7 @@
 const Router = require('koa-router')
 const { HttpError, AuthError } = require('src/lib/error/index')
 const checkRoles = require('../middlewares/checkRoles')
-const validateRequest = require('../middlewares/validateRequest')
+const addRequestValidator = require('../middlewares/validateRequest')
 
 const log = require('src/lib/log')(module)
 
@@ -39,7 +39,7 @@ function findRoutes () {
 
     handlers.forEach(handlerName => {
       const handlerParams = ctrl[handlerName]
-      const { path, method, handler, roles, schema, required } = handlerParams
+      const { path, method, handler, roles, requestSchema, responseSchema } = handlerParams
 
       if (!ALLOWED_HTTP_METHODS.includes(method)) {
         log.warn(`Handler %s in %s controller has incorrect method field: %s. Expected %s. Skip.`,
@@ -66,8 +66,8 @@ function findRoutes () {
       if (roles) {
         middlewares.push(checkRoles(roles))
       }
-      if (schema) {
-        middlewares.push(validateRequest(handlerId, schema, required))
+      if (requestSchema || responseSchema) {
+        middlewares.push(addRequestValidator(handlerId, requestSchema, responseSchema))
       }
 
       log.debug(`Register path %s`, url)

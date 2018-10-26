@@ -6,74 +6,117 @@ exports.params = {
   base: ''
 }
 
-exports.renewAccessToken = renewAccessToken
-exports.renewTokenPair = renewTokenPair
-
 exports.check = {
   path: 'hi',
-  schema: {},
+  requestSchema: {},
   method: 'get',
+  responseSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
+      }
+    },
+    required: ['username']
+  },
   handler: check
 }
 
 /**
- *
- * @param ctx
- * @returns {Promise<void>}
+ * Checks if there's correct non-expired and auth header and returns username.
  */
 async function check (ctx) {
   const { user } = ctx.request
 
-  if (user) {
-    const { username } = user
-    ctx.body = {
-      data: {
-        username
-      }
-    }
-  } else {
-    throw new HttpError(401, 'Not authorized')
+  if (!user) {
+    throw new AuthError(401, 'Not authorized')
   }
-}
 
+  const { username } = user
+  ctx.end({
+    username
+  })
+}
 
 exports.login = {
   path: 'login',
-  schema: {
-    'username': {
-      'type': 'string'
+  requestSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
+      },
+      'password': {
+        'type': 'string'
+      }
     },
-    'password': {
-      'type': 'string'
-    }
+    required: ['username', 'password']
   },
-  required: ['username', 'password'],
   method: 'post',
-  handler: auth
+  handler: login
 }
 
-async function auth (ctx) {
-  const { username = '', password = '', email = '', additional = '', isreg = false } = ctx.request.body
+// TODO: handle AuthError in sendHttpError middleware
+async function login (ctx) {
+  const { username = '', password = '' } = ctx.request.body
 
-  try {
-    let user = isreg
-      ? await userService.register(username.trim(), password.trim(), email.trim(), additional.trim())
-      : await userService.authorize(username, password)
-    const tokenPair = await authService.generateTokensPair(user.username)
-    ctx.body = {
-      data: {
-        username: user.username,
-        access: tokenPair.accessToken,
-        refresh: tokenPair.refreshToken,
+  const user = await userService.authorize(username, password)
+  const tokenPair = await authService.generateTokensPair(user.username)
+
+  ctx.end({
+    username: user.username,
+    access: tokenPair.accessToken,
+    refresh: tokenPair.refreshToken,
+  })
+}
+
+exports.register = {
+  path: 'register',
+  requestSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
+      },
+      'password': {
+        'type': 'string'
+      },
+      'email': {
+        'type': 'string'
+      },
+      'additional': {
+        'type': 'string'
       }
-    }
-  } catch (err) {
-    if (err instanceof AuthError) {
-      throw new HttpError(401, err.message)
-    } else {
-      throw err
-    }
-  }
+    },
+    required: ['username', 'password', 'email']
+  },
+  method: 'post',
+  handler: register
+}
+
+// TODO: handle AuthError in sendHttpError middleware
+async function register (ctx) {
+  const { username, password, email = '', additional = '' } = ctx.request.body
+
+  const user = userService.register(username.trim(), password.trim(), email.trim(), additional.trim())
+
+  const tokenPair = await authService.generateTokensPair(user.username)
+  ctx.end({
+    username: user.username,
+    access: tokenPair.accessToken,
+    refresh: tokenPair.refreshToken,
+  })
+}
+
+exports.renewAccessToken = {
+  path: 'access',
+  requestSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
+      }
+    },
+    required: ['username']
+  },
+  method: 'post',
+  handler: renewAccessToken
 }
 
 async function renewAccessToken (ctx) {
@@ -81,20 +124,26 @@ async function renewAccessToken (ctx) {
   const { username } = body
   const refreshToken = ctx.headers['refresh']
 
-  try {
-    const accessToken = await authService.renewAccessToken(username, refreshToken)
-    ctx.body = {
-      data: {
-        access: accessToken
+  const accessToken = await authService.renewAccessToken(username, refreshToken)
+  ctx.end({
+    access: accessToken
+  })
+
+}
+
+
+exports.renewTokenPair = {
+  path: 'pair',
+  requestSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
       }
-    }
-  } catch (err) {
-    if (err instanceof AuthError) {
-      throw new HttpError(401, err.message)
-    } else {
-      throw err
-    }
-  }
+    },
+    required: ['username']
+  },
+  method: 'post',
+  handler: renewTokenPair
 }
 
 async function renewTokenPair (ctx) {
@@ -102,34 +151,26 @@ async function renewTokenPair (ctx) {
   const { username } = body
   const refreshToken = ctx.headers['refresh']
 
-  try {
-    const tokenPair = await authService.renewTokenPair(username, refreshToken)
-    ctx.body = {
-      data: {
-        access: tokenPair.accessToken,
-        refresh: tokenPair.refreshToken,
-      }
-    }
-  } catch (err) {
-    if (err instanceof AuthError) {
-      throw new HttpError(401, err.message)
-    } else {
-      throw err
-    }
-  }
+  const tokenPair = await authService.renewTokenPair(username, refreshToken)
+  ctx.end({
+    access: tokenPair.accessToken,
+    refresh: tokenPair.refreshToken,
+  })
 }
 
 exports.logout = {
   path: 'logout',
-  schema: {
-    'username': {
-      'type': 'string'
+  requestSchema: {
+    properties: {
+      'username': {
+        'type': 'string'
+      },
+      'password': {
+        'type': 'string'
+      }
     },
-    'password': {
-      'type': 'string'
-    }
+    required: ['username']
   },
-  required: ['username'],
   method: 'post',
   handler: logout
 }
@@ -141,18 +182,9 @@ exports.logout = {
 async function logout (ctx) {
   const { username } = ctx.request.body
   const refreshToken = ctx.headers['refresh']
-  try {
-    await authService.invalidateRefreshToken(username, refreshToken)
-    ctx.body = {
-      data: {
-        success: true
-      }
-    }
-  } catch (err) {
-    if (err instanceof AuthError) {
-      throw new HttpError(401, err.message)
-    } else {
-      throw err
-    }
-  }
+
+  await authService.invalidateRefreshToken(username, refreshToken)
+  ctx.end({
+    success: true
+  })
 }

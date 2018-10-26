@@ -10,7 +10,6 @@ exports.getDir = getDir
 exports.checkAvailability = checkAvailability
 exports.readDirSeparated = readDirSeparated
 
-
 async function getDir (mainPath, secondPath) {
   const resultPath = path.resolve(mainPath, secondPath)
   const files = await readDirAsync(resultPath, resultPath)
