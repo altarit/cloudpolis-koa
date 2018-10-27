@@ -38,10 +38,12 @@ function addRequestValidator(id, requestSchema, responseSchema) {
 
     if (responseSchemaId) {
       const payload = ctx.response.body || {}
-      const result = validator.validate(payload.data, responseSchemaId)
+      // TODO: Seems like a bug. Property name of payload.data is erased for some reason during validation.
+      const data = JSON.parse(JSON.stringify(payload.data))
+      const result = validator.validate(data, responseSchemaId)
 
       if (result.errors.length) {
-        log.warn(`Response doesn't match to it's schema: %s`, result.errors[0])
+        console.error(`Response doesn't match to it's schema: %s`, result.errors[0])
         // const { property, message, schema: schemaName, name, argument, stack } = result.errors[0]
       }
     }

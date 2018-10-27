@@ -1,19 +1,11 @@
-const mongoose = require('src/lib/mongoose')
 const { Compilation } = require('src/models/compilation')
-const { Album } = require('src/models/album')
 const { Song } = require('src/models/song')
 const { SongInfo } = require('src/models/songInfo')
-const { Library } = require('src/models/library')
-
 const log = require('src/lib/log')(module)
 
 exports.searchTracksByQuery = searchTracksByQuery
 exports.searchTrackByHref = searchTrackByHref
 exports.getAllArtists = getAllArtists
-exports.getAllLibraries = getAllLibraries
-exports.getCompilationsByLibraryName = getCompilationsByLibraryName
-exports.createLibrary = createLibrary
-exports.deleteLibrary = deleteLibrary
 exports.getArtistByName = getArtistByName
 exports.getTrackInfo = getTrackInfo
 exports.setTrackInfo = setTrackInfo
@@ -42,38 +34,6 @@ async function searchTrackByHref (src) {
 async function getAllArtists () {
   const compilations = await Compilation.find({}, { name: 1, count: 1, library: 1, _id: 0 }).sort({ name: 1 }).exec()
   return compilations
-}
-
-async function getAllLibraries () {
-  const libraries = await Library.find({}, { name: 1, count: 1, library: 1, fullpath: 1, _id: 0 })
-    .sort({ name: 1 }).exec()
-  return libraries
-}
-
-async function getCompilationsByLibraryName (libraryName) {
-  const compilations = await Compilation.find({ library: libraryName }, {
-    name: 1,
-    count: 1,
-    library: 1,
-    fullpath: 1,
-    _id: 0
-  })
-  return compilations
-}
-
-async function createLibrary (libraryName) {
-  const library = new Library({
-    id: libraryName,
-    name: libraryName
-  })
-  let result = await library.save()
-  return result
-}
-
-async function deleteLibrary (libraryName) {
-  const library = await Library.findOne({ name: libraryName })
-  const result = await library.remove().exec()
-  return result
 }
 
 async function getArtistByName (library, name) {

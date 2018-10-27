@@ -9,6 +9,7 @@ const controllers = [
   require('../controllers/authCtrl'),
   require('../controllers/musicCtrl'),
   require('../controllers/playlistsCtrl'),
+  require('../controllers/librariesCtrl'),
   require('../controllers/usersCtrl'),
   require('../controllers/homeCtrl'),
   require('../controllers/pathCtrl'),

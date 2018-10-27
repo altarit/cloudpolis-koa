@@ -1,18 +1,91 @@
 const fs = require('fs')
 const path = require('path')
 
+const { HttpError, AuthError } = require('src/lib/error')
 const importService = require('src/services/importService')
-
-const { HttpError, AuthError } = require('src/lib/error/index')
 const log = require('src/lib/log')(module)
 
-exports.prepareImportSession = prepareImportSession
 exports.checkProgress = checkProgress
 exports.extractTrackSources = extractTrackSources
 exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
 exports.getImportSessionByName = getImportSessionByName
 exports.getTree = getTree
 exports.confirmSession = confirmSession
+
+exports.params = {
+  base: 'manager/'
+}
+
+exports.createImportSession = {
+  path: 'libraries/:libraryName/import/sessions',
+  description: 'Creates new INITIALIZED ImportSession.',
+  requestSchema: {
+    properties: {
+      mainPath: {
+        type: 'string',
+        description: 'Full path to the import directory.'
+      },
+      networkPath: {
+        type: 'string',
+        description: 'Network path that provides files from {mainPath}.'
+      }
+    },
+    required: ['mainPath', 'networkPath']
+  },
+  method: 'post',
+  responseSchema: {
+    properties: {
+      importSessionId: {
+        type: 'string',
+        description: 'Id of created ImportSession.'
+      },
+    },
+    required: ['importSessionId']
+  },
+  handler: createImportSession
+}
+
+async function createImportSession (ctx) {
+  const { params, request } = ctx
+  const { libraryName } = params
+  const { mainPath, networkPath } = request.body
+
+  const result = await importService.createImportSession(libraryName, mainPath, networkPath)
+
+  ctx.end({
+    importSessionId: result
+  })
+}
+
+
+exports.getTree = {
+  path: 'imports/:sessionName/tree',
+  description: 'Builds file tree and stores it in the ImportSession.',
+  requestSchema: {
+  },
+  method: 'post',
+  responseSchema: {
+    properties: {
+      importSessionId: {
+        type: 'string',
+        description: 'Id of created ImportSession.'
+      },
+    },
+    required: ['importSessionId']
+  },
+  handler: getTree
+}
+
+
+async function getTree (ctx) {
+  const { params } = ctx
+  const { sessionName } = params
+
+  const result = await importService.buildImportTree(sessionName)
+
+  ctx.end(result)
+}
+
 
 async function checkProgress (ctx) {
   const sessionName = ctx.params.sessionName
@@ -38,29 +111,6 @@ async function extractTrackSources (ctx) {
   }
 }
 
-async function prepareImportSession (ctx) {
-  const libraryName = ctx.params.libraryName
-  const { mainPath, networkPath } = ctx.request.body
-
-  const result = await importService.prepareImportSession(libraryName, mainPath, networkPath)
-
-  ctx.body = {
-    data: {
-      importSessionId: result
-    }
-  }
-}
-
-async function getTree (ctx) {
-  const sessionName = ctx.params.sessionName
-  const { mainPath, networkPath, libraryName } = ctx.request.body
-
-  const result = await importService.buildImportTree(sessionName, libraryName, mainPath, networkPath)
-
-  ctx.body = {
-    data: result
-  }
-}
 
 async function confirmSession (ctx) {
   const sessionName = ctx.params.sessionName

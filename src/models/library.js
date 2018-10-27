@@ -1,6 +1,6 @@
 const mongoose = require('src/lib/mongoose')
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   id: {
     type: String,
     unique: false,
@@ -8,7 +8,7 @@ let schema = new mongoose.Schema({
   },
   name: {
     type: String,
-    unique: false,
+    unique: true,
     required: true
   }
 })

@@ -1,41 +1,117 @@
-const { HttpError } = require('src/lib/error/index')
-const musicService = require('src/services/musicService')
-
+const { NotFoundError } = require('src/lib/error')
+const librariesService = require('src/services/librariesService')
 const log = require('src/lib/log')(module)
 
-exports.libraries = libraries
-exports.libraryDetails = libraryDetails
-exports.createLibrary = createLibrary
-exports.deleteLibrary = deleteLibrary
-
-
-async function libraries (ctx) {
-  const libraries = await musicService.getAllLibraries()
-  ctx.body = {
-    data: libraries
-  }
+exports.params = {
+  base: 'music/libraries/'
 }
 
-async function libraryDetails (ctx) {
-  const libraryName = ctx.params.libraryName
-  const compilations = await musicService.getCompilationsByLibraryName(libraryName)
-  ctx.body = {
-    data: compilations
+exports.getLibrariesList = {
+  path: '',
+  description: 'Returns all libraries.',
+  requestSchema: {},
+  method: 'get',
+  responseSchema: {
+    properties: {
+      libraries: {
+        type: 'array',
+        description: 'Libraries list.',
+        items: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string'
+            },
+          },
+          required: ['name']
+        }
+      },
+    },
+    required: ['libraries']
+  },
+  handler: getLibrariesList
+}
+
+async function getLibrariesList (ctx) {
+  const libraries = await librariesService.getAllLibraries()
+
+  ctx.end({
+    libraries
+  })
+}
+
+exports.getLibraryDetails = {
+  path: ':libraryName',
+  description: 'Returns library by name.',
+  requestSchema: {},
+  method: 'get',
+  responseSchema: {
+    properties: {
+      library: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string'
+          },
+        },
+        required: ['name']
+      },
+    },
+    required: ['library']
+  },
+  handler: getLibraryDetails
+}
+
+async function getLibraryDetails (ctx) {
+  const { libraryName } = ctx.params
+
+  const library = await librariesService.getLibraryDetails(libraryName)
+  if (!library) {
+    throw new NotFoundError(`Library ${libraryName} not found.`)
   }
+
+  ctx.end({
+    library
+  })
+}
+
+exports.createLibrary = {
+  path: '',
+  description: 'Create a library.',
+  requestSchema: {
+    properties: {
+      name: {
+        type: 'string'
+      },
+    },
+    required: ['name']
+  },
+  method: 'post',
+  responseSchema: {},
+  handler: createLibrary
 }
 
 async function createLibrary (ctx) {
-  const libraryName = ctx.request.body.name
-  if (!libraryName) {
-    log.debug('Parameter name is missed')
-    throw new Error('Parameter name is missed')
-  }
-  let library = await musicService.createLibrary(libraryName)
-  ctx.body = {}
+  const { name } = ctx.request.body
+
+  const library = await librariesService.createLibrary(name)
+
+  ctx.end({})
+}
+
+exports.deleteLibrary = {
+  path: ':libraryName',
+  description: 'Delete library.',
+  requestSchema: {},
+  method: 'delete',
+  responseSchema: {},
+  handler: deleteLibrary
 }
 
 async function deleteLibrary (ctx) {
-  let libraryName = ctx.params.libraryName
-  let result = musicService.deleteLibrary(libraryName)
-  ctx.body = {}
+  const { libraryName } = ctx.params
+
+  const result = librariesService.deleteLibrary(libraryName)
+
+  ctx.end({})
 }

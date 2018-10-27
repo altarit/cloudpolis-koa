@@ -26,10 +26,6 @@ router.get('admin/control', checkAdmin, require('./controllers/adminCtrl').contr
 
 // Music
 router.get('music', require('./controllers/musicCtrl').index)
-router.get('music/libraries', require('./controllers/musicCtrl').libraries)
-router.get('music/libraries/:libraryName', require('./controllers/musicCtrl').libraryDetails)
-router.post('music/libraries', checkAdmin, require('./controllers/musicCtrl').createLibrary)
-router.delete('music/libraries/:libraryName', checkAdmin, require('./controllers/musicCtrl').deleteLibrary)
 router.get('music/artists', require('./controllers/musicCtrl').artists)
 router.get('music/artists/:library/:name', require('./controllers/musicCtrl').getArtistByName)
 router.get('music/search', require('./controllers/musicCtrl').search)
@@ -47,7 +43,6 @@ router.put('music/tracks/:trackId', require('./controllers/musicCtrl').setTrackI
 // Manager
 //router.post('manager/libraries/:libraryName/mountpoints', require('./controllers/path/pathCtrl').add)
 router.get('manager/libraries/:libraryName/import/sessions', require('./controllers/importCtrl').getImportSessionsByLibraryName)
-router.post('manager/libraries/:libraryName/import/sessions', require('./controllers/importCtrl').prepareImportSession)
 
 router.get('manager/imports/:sessionName', require('./controllers/importCtrl').getImportSessionByName)
 router.post('manager/imports/:sessionName/tree', require('./controllers/importCtrl').getTree)

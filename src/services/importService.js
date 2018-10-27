@@ -2,16 +2,16 @@ const fs = require('fs')
 const path = require('path')
 const id3 = require('node-id3')
 
+const { NotFoundError } = require('src/lib/error')
 const pathService = require('src/services/pathService')
 const { SongSource } = require('src/models/songSource')
 const { Song } = require('src/models/song')
 const { ImportSession } = require('src/models/importSession')
-
 const log = require('src/lib/log')(module)
 
 module.exports.startImportSession = startImportSession
 module.exports.checkProgress = checkProgress
-module.exports.prepareImportSession = prepareImportSession
+module.exports.createImportSession = createImportSession
 module.exports.extractTrackSources = extractTrackSources
 module.exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
 module.exports.getImportSessionByName = getImportSessionByName
@@ -81,7 +81,7 @@ async function getImportSessionByName (name) {
   return await ImportSession.findOne({ name: name })
 }
 
-async function prepareImportSession (libraryName, importPath, networkPath) {
+async function createImportSession (libraryName, importPath, networkPath) {
   const session = new ImportSession({
     name: 'm' + Date.now(),
     library: libraryName,
@@ -92,16 +92,6 @@ async function prepareImportSession (libraryName, importPath, networkPath) {
   await session.save()
 
   return session.name
-
-  // if (['INITIALIZED'].includes(session.status)) {
-  //   const tree = await buildImportTree(libraryName, importPath, networkPath)
-  //
-  //   session.tree = tree
-  //   session.status = 'PREPARED'
-  //   tree.save()
-  // }
-  //
-  // return session
 }
 
 async function confirmSession (sessionName) {
@@ -167,13 +157,14 @@ function normalizeNextLevel (result, node, options = {}) {
 }
 
 
-async function buildImportTree (sessionName, libraryName, mainPath, networkPath) {
-  log.debug(`buildImportTree libraryName=%s mainPath='%s' networkPath='%s'`, libraryName, mainPath, networkPath)
-
+async function buildImportTree (sessionName) {
   const importSession = await ImportSession.findOne({ name: sessionName })
   if (!importSession) {
-    throw new Error(`Import session ${sessionName} not found.`)
+    throw new NotFoundError(`Import session ${sessionName} not found.`)
   }
+
+  const {library, mainPath} = importSession
+  log.debug(`buildImportTree library=%s mainPath='%s' networkPath='%s'`, library, mainPath)
 
   const resultPath = path.resolve(mainPath)
   const { directories: rootDirectories, files: rootFiles } = await pathService.readDirSeparated(resultPath, resultPath)
