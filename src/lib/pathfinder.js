@@ -10,6 +10,7 @@ const controllers = [
   require('../controllers/musicCtrl'),
   require('../controllers/playlistsCtrl'),
   require('../controllers/librariesCtrl'),
+  require('../controllers/importSessionsCtrl'),
   require('../controllers/usersCtrl'),
   require('../controllers/homeCtrl'),
   require('../controllers/pathCtrl'),
@@ -71,7 +72,7 @@ function findRoutes () {
         middlewares.push(addRequestValidator(handlerId, requestSchema, responseSchema))
       }
 
-      log.debug(`Register path %s`, url)
+      // log.debug(`Register path %s`, url)
       router[method](url, ...middlewares, handler)
     })
 

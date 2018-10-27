@@ -1,9 +1,6 @@
-const Validator = require('jsonschema').Validator
-
 const { BadRequestError } = require('src/lib/error/index')
-
+const validator = require('src/lib/validator')
 const log = require('src/lib/log')(module)
-const validator = new Validator()
 
 module.exports = addRequestValidator
 

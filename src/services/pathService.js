@@ -140,7 +140,8 @@ async function getDriveList () {
 async function readDirSeparated (directoryPath, rootPath) {
   const directories = []
   const files = []
-  const allObjects = await readDirAsync(path.resolve(rootPath, directoryPath), rootPath)
+  const nextDirectoryPath = path.resolve(rootPath, directoryPath)
+  const allObjects = await readDirAsync(nextDirectoryPath, rootPath)
 
   for (const file of allObjects) {
     if (file.isDir) {

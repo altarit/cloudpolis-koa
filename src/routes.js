@@ -7,12 +7,6 @@ const checkAdmin = checkRoles('admin')
 // Home
 router.get('', require('./controllers/homeCtrl').index)
 
-// Auth
-router.post('access', require('./controllers/authCtrl').renewAccessToken)
-router.post('pair', require('./controllers/authCtrl').renewTokenPair)
-router.post('login', require('./controllers/authCtrl').auth)
-router.post('logout', require('./controllers/authCtrl').logout)
-
 // Users
 router.get('users', require('./controllers/usersCtrl').getUsers)
 router.get('users/:id', require('./controllers/usersCtrl').getDetails)
@@ -41,12 +35,6 @@ router.put('music/tracks/:trackId', require('./controllers/musicCtrl').setTrackI
 // router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/old/musicCRMCtrl').createCompilationsBulk)
 
 // Manager
-//router.post('manager/libraries/:libraryName/mountpoints', require('./controllers/path/pathCtrl').add)
-router.get('manager/libraries/:libraryName/import/sessions', require('./controllers/importCtrl').getImportSessionsByLibraryName)
-
-router.get('manager/imports/:sessionName', require('./controllers/importCtrl').getImportSessionByName)
-router.post('manager/imports/:sessionName/tree', require('./controllers/importCtrl').getTree)
-router.post('manager/imports/:sessionName/tree/confirm', require('./controllers/importCtrl').confirmSession)
 router.get('manager/imports/:sessionName/progress', require('./controllers/importCtrl').checkProgress)
 router.post('manager/imports/:sessionName/extract', require('./controllers/importCtrl').extractTrackSources)
 

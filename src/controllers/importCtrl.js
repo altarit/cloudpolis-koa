@@ -1,124 +1,100 @@
-const fs = require('fs')
-const path = require('path')
-
-const { HttpError, AuthError } = require('src/lib/error')
-const importService = require('src/services/importService')
+const { HttpError } = require('src/lib/error/index')
+const importService = require('src/services/import/importService')
+const importSessionService = require('src/services/import/importSessionService')
+const importTreeBuilderService = require('src/services/import/importTreeBuilderService')
+const importTreeNormalizationService = require('src/services/import/importTreeNormalizationService')
 const log = require('src/lib/log')(module)
-
-exports.checkProgress = checkProgress
-exports.extractTrackSources = extractTrackSources
-exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
-exports.getImportSessionByName = getImportSessionByName
-exports.getTree = getTree
-exports.confirmSession = confirmSession
 
 exports.params = {
   base: 'manager/'
 }
 
-exports.createImportSession = {
-  path: 'libraries/:libraryName/import/sessions',
-  description: 'Creates new INITIALIZED ImportSession.',
-  requestSchema: {
-    properties: {
-      mainPath: {
-        type: 'string',
-        description: 'Full path to the import directory.'
-      },
-      networkPath: {
-        type: 'string',
-        description: 'Network path that provides files from {mainPath}.'
-      }
-    },
-    required: ['mainPath', 'networkPath']
-  },
-  method: 'post',
-  responseSchema: {
-    properties: {
-      importSessionId: {
-        type: 'string',
-        description: 'Id of created ImportSession.'
-      },
-    },
-    required: ['importSessionId']
-  },
-  handler: createImportSession
-}
-
-async function createImportSession (ctx) {
-  const { params, request } = ctx
-  const { libraryName } = params
-  const { mainPath, networkPath } = request.body
-
-  const result = await importService.createImportSession(libraryName, mainPath, networkPath)
-
-  ctx.end({
-    importSessionId: result
-  })
-}
-
-
-exports.getTree = {
+exports.buildTree = {
   path: 'imports/:sessionName/tree',
   description: 'Builds file tree and stores it in the ImportSession.',
-  requestSchema: {
-  },
+  requestSchema: {},
   method: 'post',
   responseSchema: {
     properties: {
-      importSessionId: {
-        type: 'string',
-        description: 'Id of created ImportSession.'
+      fileTree: {
+        type: 'object',
       },
     },
-    required: ['importSessionId']
+    required: ['fileTree']
   },
-  handler: getTree
+  handler: buildTree
 }
 
-
-async function getTree (ctx) {
+async function buildTree (ctx) {
   const { params } = ctx
   const { sessionName } = params
 
-  const result = await importService.buildImportTree(sessionName)
+  const fileTree = await importTreeBuilderService.buildImportTree(sessionName)
 
-  ctx.end(result)
+  ctx.end({
+    fileTree
+  })
 }
 
-
-async function checkProgress (ctx) {
-  const sessionName = ctx.params.sessionName
-
-  const count = await importService.checkProgress(sessionName)
-
-  ctx.body = {
-    data: {
-      tracksCompleted: count
-    }
-  }
+exports.confirmSession = {
+  path: 'imports/:sessionName/tree/confirm',
+  description: 'Changes import status from INITIALIZED to READY_TO_PROCESS_METADATA.',
+  requestSchema: {},
+  method: 'post',
+  responseSchema: {
+    properties: {
+      status: {
+        type: 'string'
+      },
+      tracks: {
+        type: 'array'
+      },
+      albums: {
+        type: 'array'
+      },
+      compilations: {
+        type: 'array'
+      },
+    },
+    required: ['status', 'tracks', 'albums', 'compilations']
+  },
+  handler: confirmSession
 }
-
-async function extractTrackSources (ctx) {
-  const sessionName = ctx.params.sessionName
-
-  const result = await importService.extractTrackSources(sessionName)
-
-  ctx.body = {
-    data: {
-      tracksCompleted: result,
-    }
-  }
-}
-
 
 async function confirmSession (ctx) {
-  const sessionName = ctx.params.sessionName
+  const { sessionName } = ctx.params
 
-  const session = await importService.confirmSession(sessionName)
-  const { importPath, library, networkPath, status, trackSources, albumSources, compilationSources } = session
+  const session = await importTreeNormalizationService.confirmSession(sessionName)
+  const { status, trackSources, albumSources, compilationSources } = session
 
-  importService.startImportSession(sessionName, importPath, trackSources, albumSources, compilationSources, library, networkPath, session)
+  ctx.end({
+    status,
+    tracks: trackSources,
+    albums: albumSources,
+    compilations: compilationSources,
+  })
+}
+
+exports.processMetadata = {
+  path: 'imports/:sessionName/metadata',
+  description: '',
+  requestSchema: {},
+  method: 'post',
+  responseSchema: {
+    properties: {
+      status: {
+        type: 'string'
+      },
+    },
+    required: ['status']
+  },
+  handler: processMetadata
+}
+
+async function processMetadata (ctx) {
+  const { sessionName } = ctx.params
+
+  importService.startImportSession(sessionName)
     .then(res => {
       log.debug(`Import session '%s' has completed`, sessionName)
     })
@@ -126,37 +102,59 @@ async function confirmSession (ctx) {
       log.stackTrace(`Error at import session ${sessionName}`, err)
     })
 
-  ctx.body = {
-    data: {
-      status,
-      tracks: trackSources,
-      albums: albumSources,
-      compilations: compilationSources,
-    }
-  }
+  ctx.end({
+    status
+  })
 }
 
-
-async function getImportSessionsByLibraryName (ctx) {
-  const libraryName = ctx.params.libraryName
-
-  const result = await importService.getImportSessionsByLibraryName(libraryName)
-
-  ctx.body = {
-    data: {
-      sessions: result
-    }
-  }
+exports.checkProgress = {
+  path: 'imports/:sessionName/metadata/progress',
+  description: '',
+  requestSchema: {},
+  method: 'get',
+  responseSchema: {
+    properties: {
+      tracksCompleted: {
+        type: 'number'
+      },
+    },
+    required: ['tracksCompleted']
+  },
+  handler: checkProgress
 }
 
-async function getImportSessionByName (ctx) {
-  const sessionName = ctx.params.sessionName
+async function checkProgress (ctx) {
+  const { sessionName } = ctx.params
 
-  const result = await importService.getImportSessionByName(sessionName)
+  const count = await importService.checkProgress(sessionName)
 
-  ctx.body = {
-    data: {
-      session: result
-    }
-  }
+  ctx.end({
+    tracksCompleted: count
+  })
+}
+
+exports.extractTrackSources = {
+  path: 'imports/:sessionName/extract',
+  description: '',
+  requestSchema: {},
+  method: 'post',
+  responseSchema: {
+    properties: {
+      tracksCompleted: {
+        type: 'number'
+      },
+    },
+    required: ['tracksCompleted']
+  },
+  handler: extractTrackSources
+}
+
+async function extractTrackSources (ctx) {
+  const { sessionName } = ctx.params
+
+  const result = await importService.extractTrackSources(sessionName)
+
+  ctx.end({
+    tracksCompleted: result,
+  })
 }
