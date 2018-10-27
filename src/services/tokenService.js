@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+
 const { RefreshToken } = require('src/models/refreshToken')
 const { AuthError } = require('src/lib/error')
 const log = require('src/lib/log')(module)
@@ -39,8 +40,9 @@ async function generateAccessToken (username) {
 }
 
 async function renewAccessToken (username, refreshToken) {
-  const refreshTokenEntiry = await checkRefreshToken(username, refreshToken)
-  if (!refreshTokenEntiry) {
+  const refreshTokenEntry = await checkRefreshToken(username, refreshToken)
+
+  if (!refreshTokenEntry) {
     throw new AuthError('Refresh token not found')
   }
   return await this.generateAccessToken(username)

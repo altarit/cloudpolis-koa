@@ -1,13 +1,14 @@
-const util = require('util')
+const http = require('http')
 
-function AuthError(message) {
-  Error.apply(this, arguments)
-  Error.captureStackTrace(this, AuthError)
+class AuthError extends Error {
+  constructor (message = http.STATUS_CODES[401]) {
+    super(message)
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
 
-  this.message = message
+    this.status = 401
+    this.message = message
+  }
 }
-
-util.inherits(AuthError, Error)
-AuthError.prototype.name = 'AuthError'
 
 exports.AuthError = AuthError
