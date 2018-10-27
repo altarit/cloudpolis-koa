@@ -1,4 +1,4 @@
-const { HttpError, AuthError } = require('src/lib/error/index')
+const { HttpError, AuthError, NotFoundError, ForbiddenError } = require('src/lib/error')
 const userService = require('src/services/userService')
 const log = require('src/lib/log')(module)
 
@@ -8,44 +8,38 @@ exports.updateUser = updateUser
 
 async function getUsers (ctx) {
   const found = await userService.getList()
-  ctx.body = {
-    data: found
-  }
+
+  ctx.end({
+    users: found
+  })
 }
 
 async function getDetails (ctx) {
-  const req = ctx.request
-  const id = ctx.params.id
+  const { id } = ctx.params
   const user = await userService.getDetails(id)
-  if (user) {
-    ctx.body = {
-      data: user
-    }
-  } else {
-    throw new HttpError(404, "User not found.")
+
+  if (!user) {
+    throw new NotFoundError('User not found.')
   }
+
+  ctx.end({
+    user: user
+  })
 }
 
 async function updateUser (ctx) {
-  const req = ctx.request
-  const id = ctx.params.id
-  if (!ctx.locals.user.username || ctx.locals.user.username != id)
-    throw new HttpError(403, "Access denied")
+  const { request, params, user } = ctx.request
+  const { id } = params
 
-  const oldpassword = req.body.oldpassword
-  const newpassword = req.body.newpassword
-  const additional = req.body.additional
-
-  try {
-    const user = await userService.edit(id, oldpassword, newpassword, 'email', additional)
-    ctx.body = {
-      data: user
-    }
-  } catch (err) {
-    if (err instanceof AuthError) {
-      throw new HttpError(403, err.message)
-    } else {
-      throw err
-    }
+  if (!user || user.username || user.user.username !== id) {
+    throw new ForbiddenError()
   }
+
+  const { oldpassword, newpassword, additional } = request.body
+
+  const updatedUser = await userService.edit(id, oldpassword, newpassword, 'email', additional)
+
+  ctx.end({
+    user: updatedUser
+  })
 }

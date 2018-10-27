@@ -44,6 +44,7 @@ async function register (username, password, email, additional) {
 
 async function edit (username, oldPassword, newPassword, email, additional) {
   const user = await User._findOneByName(username)
+
   if (!user) {
     throw new AuthError('User doesn\'t exist')
   }
