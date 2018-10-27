@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs').promises
 const path = require('path')
 const drivelist = require('drivelist')
 const axios = require('axios')
@@ -10,22 +10,32 @@ exports.getDir = getDir
 exports.checkAvailability = checkAvailability
 exports.readDirSeparated = readDirSeparated
 
-async function getDir (mainPath, secondPath) {
-  const resultPath = path.resolve(mainPath, secondPath)
+/**
+ *
+ * @param {string} mainPath       Main path to a directory.
+ * @param {string} additionalPath Additional relative path for the mainPath param.
+ */
+async function getDir (mainPath, additionalPath) {
+  const resultPath = path.resolve(mainPath, additionalPath)
   const files = await readDirAsync(resultPath, resultPath)
   const drives = await getDriveList()
 
   return {
     path: resultPath,
-    files: files.filter(file => !file.skip),
+    files: files,
     drives: drives
   }
 }
 
+/**
+ *
+ * @param {string} importPath   Full path to a directory.
+ * @param {string} networkPath  Uri to the server that provides static files.
+ */
 async function checkAvailability (importPath, networkPath) {
   let isReadingAvailable = undefined
-  let checkedFiles = 0
   let isCreationAvailable = undefined
+  let checkedFiles = 0
 
   const secretWord = `secret_${Date.now()}`
   const filename = `temp_${Date.now()}`
@@ -33,9 +43,8 @@ async function checkAvailability (importPath, networkPath) {
   let file
 
   try {
-    file = await createFileAsync(tempFilePath, secretWord)
+    file = await fs.writeFile(tempFilePath, secretWord)
     log.debug(`Created file '%s'`, tempFilePath)
-    //await closeFileAsync(file)
     isCreationAvailable = true
 
     const uri = networkPath + filename
@@ -54,100 +63,56 @@ async function checkAvailability (importPath, networkPath) {
     log.stackTrace(`Error at checking availability ${tempFilePath}`, err)
   } finally {
     if (file) {
-      await removeFileAsync(tempFilePath)
+      await fs.unlink(tempFilePath)
       log.debug(`Removed file '%s'`, tempFilePath)
     }
   }
 
   return {
-    importPath: importPath,
-    networkPath: networkPath,
     isReadingAvailable: isReadingAvailable,
-    checkedFiles: checkedFiles,
     isCreationAvailable: isCreationAvailable,
+    checkedFiles: checkedFiles,
   }
 }
 
-async function createFileAsync (filePath, content) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePath, content, (err, fd) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve(filePath)
-    })
-  })
-}
-
-async function closeFileAsync (fileDescriptor) {
-  return new Promise((resolve, reject) => {
-    fileDescriptor.close(err => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve()
-    })
-  })
-}
-
-
-async function removeFileAsync (filePath) {
-  return new Promise((resolve, reject) => {
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve()
-    })
-  })
-}
-
-
-async function getDirFilesPaths (directoryPath) {
-  return await new Promise((resolve, reject) => {
-    fs.readdir(directoryPath, {}, (err, files) => {
-      if (err) {
-        return reject(err)
-      }
-      return resolve(files)
-    })
-  })
-}
-
 async function readDirAsync (directoryPath, rootPath) {
-  const filesPaths = await getDirFilesPaths(directoryPath)
+  const filesPaths = await fs.readdir(directoryPath)
   return await Promise.all(filesPaths.map(fileName => getFileStat(path.resolve(directoryPath, fileName), rootPath)))
+    .then(elements => elements.filter(el => el && !el.skip))
 }
 
 async function getFileStat (filePath, rootPath) {
-  return new Promise((resolve, reject) => {
-    const name = path.basename(filePath)
-    const ext = path.extname(filePath)
-    const resultPath = rootPath ? path.relative(rootPath, filePath) : filePath
+  if (filePath[0] === '.') {
+    return null
+  }
 
-    fs.stat(filePath, {}, (err, stat) => {
-      if (err || filePath[0] === '.') {
-        return resolve({
-          name: name,
-          ext: ext,
-          path: resultPath,
-          skip: true,
-        })
-      }
-      return resolve({
-        name: name,
-        ext: ext,
-        path: resultPath,
-        isDir: stat.isDirectory(),
-        size: stat.size,
-      })
-    })
-  })
+  const name = path.basename(filePath)
+  const ext = path.extname(filePath)
+  const resultPath = rootPath ? path.relative(rootPath, filePath) : filePath
+
+  try {
+    const stat = await fs.stat(filePath, {})
+    return {
+      name: name,
+      ext: ext,
+      path: resultPath,
+      isDir: stat.isDirectory(),
+      size: stat.size,
+    }
+  } catch (e) {
+    log.warn(`Error at reading stats of '%s'`, filePath)
+    return {
+      name: name,
+      ext: ext,
+      path: resultPath,
+      skip: true,
+    }
+  }
 }
 
+/**
+ *  Returns array of disk drives with mount oints.
+ */
 async function getDriveList () {
   return new Promise((resolve, reject) => {
     drivelist.list((err, drives) => {

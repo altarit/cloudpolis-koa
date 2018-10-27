@@ -1,6 +1,6 @@
 const Validator = require('jsonschema').Validator
 
-const { HttpError, AuthError } = require('src/lib/error/index')
+const { BadRequestError } = require('src/lib/error/index')
 
 const log = require('src/lib/log')(module)
 const validator = new Validator()
@@ -29,8 +29,8 @@ function addRequestValidator(id, requestSchema, responseSchema) {
         //log.warn(`Validation error: ` + result)
         //console.log(result)
         //throw result.errors[0]
-        const { property, message, schema: schemaName, name, argument, stack } = result.errors[0]
-        throw new HttpError(400, result.errors[0])
+        const { property, message, schema, name, argument, stack } = result.errors[0]
+        throw new BadRequestError(message, property, schema)
       }
     }
 
@@ -41,11 +41,8 @@ function addRequestValidator(id, requestSchema, responseSchema) {
       const result = validator.validate(payload.data, responseSchemaId)
 
       if (result.errors.length) {
-        //log.warn(`Validation error: ` + result)
-        console.log(result)
-        //throw result.errors[0]
-        const { property, message, schema: schemaName, name, argument, stack } = result.errors[0]
-        //throw new HttpError(400, result.errors[0])
+        log.warn(`Response doesn't match to it's schema: %s`, result.errors[0])
+        // const { property, message, schema: schemaName, name, argument, stack } = result.errors[0]
       }
     }
   }
