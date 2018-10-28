@@ -16,16 +16,14 @@ const schema = new mongoose.Schema({
   },
   compilation: {
     type: String,
-    required: true,
-    unique: false
+    required: true
   },
   album: {
     type: String
   },
   src: {
     type: String,
-    requred: true,
-    //unique: true
+    requred: true
   },
   sources: {
     typ: Object,

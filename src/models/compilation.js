@@ -3,8 +3,7 @@ const mongoose = require('src/lib/mongoose')
 let schema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   name: {
     type: String,

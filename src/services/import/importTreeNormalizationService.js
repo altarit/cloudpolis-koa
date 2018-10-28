@@ -17,7 +17,7 @@ async function confirmSession (sessionName) {
   const status = 'READY_TO_PROCESS_METADATA'
   const { tracks, albums, compilations } = normalizeLibraryTree(importSession.fileTree)
 
-  Object.assign(importSession, {status, tracks, albums, compilations})
+  Object.assign(importSession, {status, trackSources: tracks, albumSources: albums, compilationSources: compilations})
   await importSession.save()
 
   return importSession
