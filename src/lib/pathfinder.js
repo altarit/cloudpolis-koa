@@ -10,6 +10,7 @@ const controllers = [
   require('../controllers/musicCtrl'),
   require('../controllers/playlistsCtrl'),
   require('../controllers/librariesCtrl'),
+  require('../controllers/compilationsCtrl'),
   require('../controllers/importSessionsCtrl'),
   require('../controllers/usersCtrl'),
   require('../controllers/homeCtrl'),

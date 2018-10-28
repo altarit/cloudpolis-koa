@@ -19,11 +19,6 @@ router.get('admin/statistic', checkAdmin, require('./controllers/adminCtrl').sta
 router.get('admin/control', checkAdmin, require('./controllers/adminCtrl').control)
 
 // Music
-router.get('music', require('./controllers/musicCtrl').index)
-router.get('music/artists', require('./controllers/musicCtrl').artists)
-router.get('music/artists/:library/:name', require('./controllers/musicCtrl').getArtistByName)
-router.get('music/search', require('./controllers/musicCtrl').search)
-router.get('music/random', require('./controllers/musicCtrl').random)
 router.get('music/songs', require('./controllers/musicCtrl').bySrc)
 router.get('music/stats/single', require('./controllers/musicCtrl').addSingleStat)
 router.get('music/tracks/:trackId', require('./controllers/musicCtrl').getTrackInfo)
@@ -33,10 +28,6 @@ router.put('music/tracks/:trackId', require('./controllers/musicCtrl').setTrackI
 // router.post('music/extract', checkAdmin, require('./controllers/old/musicCRMCtrl').extract)
 // router.delete('music/songs', checkAdmin, require('./controllers/old/musicCRMCtrl').dropSongs)
 // router.post('music/libraries/:libraryName', checkAdmin, require('./controllers/old/musicCRMCtrl').createCompilationsBulk)
-
-// Manager
-router.get('manager/imports/:sessionName/progress', require('./controllers/importCtrl').checkProgress)
-router.post('manager/imports/:sessionName/extract', require('./controllers/importCtrl').extractTrackSources)
 
 // Playlists
 router.get('music/playlists', require('./controllers/playlistsCtrl').playlists)

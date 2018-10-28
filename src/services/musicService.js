@@ -38,7 +38,11 @@ async function getAllArtists () {
 
 async function getArtistByName (library, name) {
   const artists = await Compilation.findOne({ library: library, name: name })
-  return artists
+  const tracks = await Song.find({ library: library, compilation: name })
+
+  return {
+    tracks: tracks
+  }
 }
 
 async function getTrackInfo (trackId) {
