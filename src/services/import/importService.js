@@ -3,18 +3,23 @@ const id3 = require('node-id3')
 
 const { NotFoundError } = require('src/lib/error')
 const importSessionService = require('src/services/import/importSessionService')
-const { Song, Library, ImportSession, SongSource } = require('src/models')
+const { Song, Library, ImportSession } = require('src/models')
 const log = require('src/lib/log')(module)
 
 module.exports.startImportSession = startImportSession
 module.exports.checkProgress = checkProgress
 module.exports.extractTrackSources = extractTrackSources
 
-async function startImportSession (importSessionId) {
-  const session = await importSessionService.getImportSessionByName(sessionName)
+async function startImportSession (sessionName) {
+  const session = await ImportSession.findOne({ name: sessionName })
   const { library: libraryName, networkPath, status, trackSources, albumSources, compilationSources } = session
+  if (status !== 'READY_TO_PROCESS_METADATA' && status !== 'PROCESSING_METADATA') {
+    throw new Error(`Session isn't in READY_TO_PROCESS_METADATA status.`)
+  }
+  session.status = 'PROCESSING_METADATA'
+  await session.save()
 
-  log.debug(`Started import session ${importSessionId}`)
+  log.debug(`Started import session ${sessionName}`)
   const tracks = await Promise.all(trackSources.map(async track => {
     const basename = path.basename(track.path)
     const trackPath = path.resolve(mainPath, track.path)
@@ -28,7 +33,7 @@ async function startImportSession (importSessionId) {
 
     return {
       preId: Date.now() + '',
-      importSession: importSessionId,
+      importSession: sessionName,
       title: fileTags.tagTitle || basename,
       library: libraryName,
       compilation: track.compilation,
@@ -61,7 +66,7 @@ async function startImportSession (importSessionId) {
 }
 
 async function checkProgress (sessionName) {
-  const count = await SongSource.count({ importSession: sessionName })
+  const count = 100;//await SongSource.count({ importSession: sessionName })
 
   return count
 }
@@ -103,7 +108,7 @@ async function getTags (path) {
 
 
 async function extractTrackSources (importSessionId) {
-  const songSources = await SongSource.find({ importSession: importSessionId })
+  const songSources = [];//await SongSource.find({ importSession: importSessionId })
 
   console.log(`Preparing to insert %s tracks`, songSources.length)
 

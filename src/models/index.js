@@ -5,7 +5,6 @@ const { ImportSession } = require('./importSession')
 const { User } = require('./user')
 const { RefreshToken } = require('./refreshToken')
 const { Song } = require('./song')
-const { SongSource } = require('./songSource')
 
 module.exports = {
   Library,
@@ -15,5 +14,4 @@ module.exports = {
   User,
   RefreshToken,
   Song,
-  SongSource,
 }

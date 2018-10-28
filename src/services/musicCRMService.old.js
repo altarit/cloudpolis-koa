@@ -3,11 +3,7 @@ const { Compilation } = require('src/models/compilation')
 const { Album } = require('src/models/album')
 const { Song } = require('src/models/song')
 const { SongInfo } = require('src/models/songInfo')
-const { Library } = require('src/models/library')
-
-const { SongSource } = require('src/models/songSource')
-const { LibrarySource } = require('src/models/librarySource')
-const { CompilationSource } = require('src/models/compilationSource')
+const { Library } = require('src/models/library'))
 
 const log = require('src/lib/log')(module)
 
@@ -175,9 +171,9 @@ async function dropSongs () {
 
 async function extract () {
   console.log(`Extracting sources...`)
-  let librarySources = await LibrarySource.find()
-  let compilationSources = await CompilationSource.find()
-  let songSources = await SongSource.find()
+  let librarySources = []//await LibrarySource.find()
+  let compilationSources = []//await CompilationSource.find()
+  let songSources = [] //await SongSource.find()
 
   let allTracks = []
   let compTracksMap = {}

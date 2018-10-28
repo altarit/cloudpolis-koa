@@ -4,8 +4,6 @@ const log = require('src/lib/log')(module)
 
 module.exports.confirmSession = confirmSession
 
-const MUSIC_EXTS = ['.mp3', '.aac', '.m4a']
-
 async function confirmSession (sessionName) {
   const importSession = await ImportSession.findOne({ name: sessionName })
   if (!importSession) {

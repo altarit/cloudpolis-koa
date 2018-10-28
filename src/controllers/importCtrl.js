@@ -103,7 +103,7 @@ async function processMetadata (ctx) {
     })
 
   ctx.end({
-    status
+    status: 'PROCESSING_METADATA'
   })
 }
 

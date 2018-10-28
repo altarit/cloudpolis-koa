@@ -13,7 +13,6 @@ async function getAllLibraries () {
     .exec()
 }
 
-
 async function getLibraryDetails (libraryName) {
   return await Library
     .findOne({ name: libraryName }, { name: 1, _id: 0 })
