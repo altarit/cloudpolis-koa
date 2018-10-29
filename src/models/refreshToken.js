@@ -2,7 +2,7 @@ const util = require('util')
 const log = require('src/lib/log')(module)
 const mongoose = require('src/lib/mongoose')
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   created: {
     type: Date,
     default: Date.now

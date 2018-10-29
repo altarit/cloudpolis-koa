@@ -1,18 +1,22 @@
 const mongoose = require('src/lib/mongoose')
 
 const schema = new mongoose.Schema({
+  // identity
   id: {
     type: String,
-    requred: true,
+    required: true,
     unique: true
   },
   title: {
     type: String,
-    requred: true
-  },
-  artist: {
-    type: String,
     required: true
+  },
+  // hierarchy
+  library: {
+    type: String
+  },
+  importSession: {
+    type: String
   },
   compilation: {
     type: String,
@@ -21,12 +25,18 @@ const schema = new mongoose.Schema({
   album: {
     type: String
   },
+  // content
   src: {
     type: String,
-    requred: true
+    required: true
   },
   sources: {
     typ: Object,
+  },
+  // other
+  artist: {
+    type: String,
+    required: true
   },
   duration: {
     type: String
@@ -43,9 +53,6 @@ const schema = new mongoose.Schema({
   rand: {
     type: Number
   },
-  library: {
-    type: String
-  }
 })
 
 exports.Song = mongoose.model('Song', schema)

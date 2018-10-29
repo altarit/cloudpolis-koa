@@ -1,16 +1,35 @@
 const mongoose = require('src/lib/mongoose')
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
+  // identity
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
   name: {
     type: String,
     required: true
   },
-  library: {
-    type: String
-  },
-  artist: {
+  created: {
     type: String,
+    required: true,
+    default: Date.now
   },
+  // hierarchy
+  library: {
+    type: String,
+    required: true
+  },
+  import: {
+    type: String,
+    required: true
+  },
+  compilation: {
+    type: String,
+    required: true
+  },
+  // content
   tracks: {
     type: Object
   },
@@ -26,7 +45,3 @@ let schema = new mongoose.Schema({
 })
 
 exports.Album = mongoose.model('Album', schema)
-
-
-
-

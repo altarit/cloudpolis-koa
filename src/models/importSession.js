@@ -1,6 +1,7 @@
 const mongoose = require('src/lib/mongoose')
 
 const schema = new mongoose.Schema({
+  // identity
   id: {
     type: String,
     required: true,
@@ -11,25 +12,27 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  status: {
-    type: String,
-    required: true,
-  },
   created: {
     type: Date,
     default: Date.now
   },
-  library: {
+  status: {
     type: String,
     required: true,
-    unique: false
   },
+  // hierarchy
+  library: {
+    type: String,
+    required: true
+  },
+  // settings
   importPath: {
     type: String,
   },
   networkPath: {
     type: String,
   },
+  // content
   fileTree: {
     type: Object
   },
@@ -40,6 +43,16 @@ const schema = new mongoose.Schema({
     type: Object
   },
   compilationSources: {
+    type: Object
+  },
+  // more content
+  tracks: {
+    type: Object
+  },
+  albums: {
+    type: Object
+  },
+  compilations: {
     type: Object
   },
 })

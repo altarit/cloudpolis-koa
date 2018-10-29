@@ -1,9 +1,11 @@
 const mongoose = require('src/lib/mongoose')
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
+  // identity
   id: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   name: {
     type: String,
@@ -14,6 +16,7 @@ let schema = new mongoose.Schema({
     required: true,
     default: Date.now
   },
+  // hierarchy
   library: {
     type: String,
     required: true
@@ -22,7 +25,7 @@ let schema = new mongoose.Schema({
     type: String,
     required: true
   },
-
+  // content
   songs: {
     type: Object
   },
@@ -38,7 +41,3 @@ let schema = new mongoose.Schema({
 })
 
 exports.Compilation = mongoose.model('Compilation', schema)
-
-
-
-
