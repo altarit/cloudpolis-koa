@@ -13,7 +13,7 @@ exports.getCompilationsList = {
   description: '',
   requestSchema: {},
   method: 'get',
-  responseSchema: compilationsSchemas.getCompilationsListResponse,
+  responseSchema: compilationsSchemas.getCompilationsListResponse.id,
   handler: getCompilationsList
 }
 
@@ -30,7 +30,7 @@ exports.getCompilationByName = {
   description: '',
   requestSchema: {},
   method: 'get',
-  responseSchema: compilationsSchemas.getCompilationByNameResponse,
+  responseSchema: compilationsSchemas.getCompilationByNameResponse.id,
   handler: getCompilationByName
 }
 

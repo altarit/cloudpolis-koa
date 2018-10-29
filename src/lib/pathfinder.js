@@ -1,7 +1,7 @@
 const Router = require('koa-router')
 const { HttpError, AuthError } = require('src/lib/error/index')
 const checkRoles = require('../middlewares/checkRoles')
-const addRequestValidator = require('../middlewares/validateRequest')
+const { addRequestValidator, addSchema} = require('../middlewares/validateRequest')
 
 const log = require('src/lib/log')(module)
 
@@ -18,11 +18,24 @@ const controllers = [
   require('../controllers/importCtrl'),
 ]
 
+const schemas = [
+  require('./schemas/compilationsSchemas'),
+  require('./schemas/librariesSchemas'),
+]
+
 const SYSTEM_METHODS = ['params']
 const ALLOWED_HTTP_METHODS = ['get', 'post', 'put', 'delete']
 
 function findRoutes () {
   const router = Router()
+
+  schemas.forEach(mdl => {
+    const schemaDecls = Object.keys(mdl).filter(el => !SYSTEM_METHODS.includes(el)).map(name => mdl[name])
+
+    schemaDecls.forEach(({id, schema}) => {
+      addSchema(id, schema)
+    })
+  })
 
   controllers.forEach(ctrl => {
     const ctrlPatams = ctrl.params
@@ -63,13 +76,14 @@ function findRoutes () {
       // }
 
       const url = base + path
-      const handlerId = '/' + (name || base) + handlerName
       const middlewares = []
 
       if (roles) {
         middlewares.push(checkRoles(roles))
       }
       if (requestSchema || responseSchema) {
+        const handlerId = '/' + (name || base) + handlerName
+
         middlewares.push(addRequestValidator(handlerId, requestSchema, responseSchema))
       }
 

@@ -13,7 +13,7 @@ exports.getLibrariesList = {
   description: 'Returns all libraries.',
   requestSchema: {},
   method: 'get',
-  responseSchema: librariesSchemas.getLibrariesListResponse,
+  responseSchema: librariesSchemas.getLibrariesListResponse.id,
   handler: getLibrariesList
 }
 
@@ -30,7 +30,7 @@ exports.getLibraryDetails = {
   description: 'Returns library by name.',
   requestSchema: {},
   method: 'get',
-  responseSchema: librariesSchemas.getLibraryDetailsResponse,
+  responseSchema: librariesSchemas.getLibraryDetailsResponse.id,
   handler: getLibraryDetails
 }
 

@@ -2,19 +2,32 @@ const { BadRequestError } = require('src/lib/error/index')
 const validator = require('src/lib/validator')
 const log = require('src/lib/log')(module)
 
-module.exports = addRequestValidator
+exports.addRequestValidator = addRequestValidator
+exports.addSchema = addSchema
 
 function addRequestValidator(id, requestSchema, responseSchema) {
   let requestSchemaId
   let responseSchemaId
 
   if (requestSchema) {
-    requestSchemaId = id + '/req'
-    addSchema(requestSchemaId, requestSchema)
+    if (typeof requestSchema === 'string') {
+      requestSchemaId = requestSchema
+    } else if (typeof requestSchema === 'object') {
+      requestSchemaId = id + '/req'
+      addSchema(requestSchemaId, requestSchema)
+    } else {
+      throw new Error(`requestSchema neither is string  nor object`)
+    }
   }
   if (responseSchema) {
-    responseSchemaId = id + '/res'
-    addSchema(responseSchemaId, responseSchema)
+    if (typeof responseSchema === 'string') {
+      responseSchemaId = responseSchema
+    } else if (typeof responseSchema === 'object') {
+      responseSchemaId = id + '/res'
+      addSchema(responseSchemaId, responseSchema)
+    } else {
+      throw new Error(`requestSchema neither is string  nor object`)
+    }
   }
 
   return async function (ctx, next) {

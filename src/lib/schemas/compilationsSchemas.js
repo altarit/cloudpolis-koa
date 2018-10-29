@@ -1,20 +1,26 @@
 exports.getCompilationsListResponse = {
-  properties: {
-    artists: {
-      type: 'array',
-      items: {
-        type: 'object',
+  id: '/getCompilationsListResponse',
+  schema: {
+    properties: {
+      artists: {
+        type: 'array',
+        items: {
+          type: 'object',
+        },
       },
     },
-  },
-  required: ['artists']
+    required: ['artists']
+  }
 }
 
 exports.getCompilationByNameResponse = {
-  properties: {
-    artists: {
-      type: 'object',
+  id: '/getCompilationByNameResponse',
+  schema: {
+    properties: {
+      artists: {
+        type: 'object',
+      },
     },
-  },
-  required: ['artist']
+    required: ['artist']
+  }
 }
