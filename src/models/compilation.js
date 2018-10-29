@@ -9,10 +9,20 @@ let schema = new mongoose.Schema({
     type: String,
     required: true
   },
+  created: {
+    type: String,
+    required: true,
+    default: Date.now
+  },
   library: {
     type: String,
     required: true
   },
+  import: {
+    type: String,
+    required: true
+  },
+
   songs: {
     type: Object
   },

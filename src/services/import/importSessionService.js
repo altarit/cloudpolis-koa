@@ -1,5 +1,6 @@
 const { NotFoundError } = require('src/lib/error/index')
 const { Library, ImportSession } = require('src/models/index')
+const {getIdString} = require('src/lib/mongoose')
 const log = require('src/lib/log')(module)
 
 module.exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
@@ -40,7 +41,11 @@ async function createImportSession (libraryName, importPath, networkPath) {
     throw new NotFoundError(`Library ${libraryName} not found.`)
   }
 
+  const id = getIdString()
+  log.debug(`Create session with id=%s`, id)
+
   const session = new ImportSession({
+    id: id,
     name: 'm' + Date.now(),
     library: libraryName,
     importPath,

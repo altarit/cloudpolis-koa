@@ -1,6 +1,11 @@
 const mongoose = require('src/lib/mongoose')
 
 const schema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
   name: {
     type: String,
     required: true,
