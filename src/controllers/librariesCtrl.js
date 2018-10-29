@@ -1,8 +1,10 @@
 const { NotFoundError } = require('src/lib/error')
 const librariesService = require('src/services/librariesService')
+const librariesSchemas = require('src/lib/schemas/librariesSchemas')
 const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'libraries',
   base: 'music/libraries/'
 }
 
@@ -11,24 +13,7 @@ exports.getLibrariesList = {
   description: 'Returns all libraries.',
   requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      libraries: {
-        type: 'array',
-        description: 'Libraries list.',
-        items: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string'
-            },
-          },
-          required: ['name']
-        }
-      },
-    },
-    required: ['libraries']
-  },
+  responseSchema: librariesSchemas.getLibrariesListResponse,
   handler: getLibrariesList
 }
 
@@ -45,20 +30,7 @@ exports.getLibraryDetails = {
   description: 'Returns library by name.',
   requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      library: {
-        type: 'object',
-        properties: {
-          name: {
-            type: 'string'
-          },
-        },
-        required: ['name']
-      },
-    },
-    required: ['library']
-  },
+  responseSchema: librariesSchemas.getLibraryDetailsResponse,
   handler: getLibraryDetails
 }
 
@@ -78,15 +50,9 @@ async function getLibraryDetails (ctx) {
 exports.createLibrary = {
   path: '',
   description: 'Create a library.',
-  requestSchema: {
-    properties: {
-      name: {
-        type: 'string'
-      },
-    },
-    required: ['name']
-  },
+  requestSchema: librariesSchemas.createLibraryRequest,
   method: 'post',
+  roles: 'admin',
   responseSchema: {},
   handler: createLibrary
 }
@@ -96,7 +62,7 @@ async function createLibrary (ctx) {
 
   const library = await librariesService.createLibrary(name)
 
-  ctx.end({})
+  ctx.end({ library })
 }
 
 exports.deleteLibrary = {
@@ -104,6 +70,7 @@ exports.deleteLibrary = {
   description: 'Delete library.',
   requestSchema: {},
   method: 'delete',
+  roles: 'admin',
   responseSchema: {},
   handler: deleteLibrary
 }
@@ -113,5 +80,5 @@ async function deleteLibrary (ctx) {
 
   const result = librariesService.deleteLibrary(libraryName)
 
-  ctx.end({})
+  ctx.end(result)
 }

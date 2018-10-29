@@ -3,6 +3,7 @@ const musicService = require('src/services/musicService')
 const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'music',
   base: 'music/'
 }
 

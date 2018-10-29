@@ -33,7 +33,7 @@ function findRoutes () {
       return
     }
 
-    const { base, name } = ctrlPatams
+    const { base, name, roles: controllerRoles } = ctrlPatams
 
     if (base === undefined) {
       log.warn(`Found a controller without base path. Skip handlers: %s.`, handlers)
@@ -42,7 +42,7 @@ function findRoutes () {
 
     handlers.forEach(handlerName => {
       const handlerParams = ctrl[handlerName]
-      const { path, method, handler, roles, requestSchema, responseSchema } = handlerParams
+      const { path, method, handler, roles = controllerRoles, requestSchema, responseSchema, name } = handlerParams
 
       if (!ALLOWED_HTTP_METHODS.includes(method)) {
         log.warn(`Handler %s in %s controller has incorrect method field: %s. Expected %s. Skip.`,
@@ -63,7 +63,7 @@ function findRoutes () {
       // }
 
       const url = base + path
-      const handlerId = '/' + base + handlerName
+      const handlerId = '/' + (name || base) + handlerName
       const middlewares = []
 
       if (roles) {

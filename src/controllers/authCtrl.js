@@ -4,6 +4,7 @@ const tokenService = require('src/services/tokenService')
 const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'auth',
   base: ''
 }
 
@@ -163,7 +164,6 @@ async function renewAccessToken (ctx) {
     access: accessToken
   })
 }
-
 
 exports.renewTokenPair = {
   path: 'pair',

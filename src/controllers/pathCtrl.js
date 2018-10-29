@@ -2,6 +2,7 @@ const pathService = require('src/services/pathService')
 const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'path',
   base: 'path/'
 }
 
@@ -22,6 +23,7 @@ exports.getDir = {
     required: []
   },
   method: 'post',
+  roles: 'admin',
   responseSchema: {
     properties: {
       path: {
@@ -100,6 +102,8 @@ exports.checkAvailability = {
     },
     required: ['importPath', 'networkPath']
   },
+  method: 'post',
+  roles: 'admin',
   responseSchema: {
     properties: {
       isReadingAvailable: {
@@ -117,7 +121,6 @@ exports.checkAvailability = {
     },
     required: ['isReadingAvailable', 'isCreationAvailable', 'checkedFiles']
   },
-  method: 'post',
   handler: checkAvailability
 }
 

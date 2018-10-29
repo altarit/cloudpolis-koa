@@ -1,8 +1,10 @@
 const { HttpError, NotFoundError } = require('src/lib/error')
 const musicService = require('src/services/musicService')
+const compilationsSchemas = require('src/lib/schemas/compilationsSchemas')
 const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'compilations',
   base: 'music/artists/'
 }
 
@@ -11,17 +13,7 @@ exports.getCompilationsList = {
   description: '',
   requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      artists: {
-        type: 'array',
-        items: {
-          type: 'object',
-        },
-      },
-    },
-    required: ['artists']
-  },
+  responseSchema: compilationsSchemas.getCompilationsListResponse,
   handler: getCompilationsList
 }
 
@@ -38,14 +30,7 @@ exports.getCompilationByName = {
   description: '',
   requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      artists: {
-        type: 'object',
-      },
-    },
-    required: ['artist']
-  },
+  responseSchema: compilationsSchemas.getCompilationByNameResponse,
   handler: getCompilationByName
 }
 

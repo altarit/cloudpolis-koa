@@ -4,7 +4,9 @@ const importSessionService = require('src/services/import/importSessionService')
 const log = require('src/lib/log')(module)
 
 exports.params = {
-  base: 'manager/'
+  name: 'importSessions',
+  base: 'manager/',
+  roles: 'admin'
 }
 
 exports.createImportSession = {

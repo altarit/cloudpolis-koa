@@ -6,7 +6,9 @@ const importTreeNormalizationService = require('src/services/import/importTreeNo
 const log = require('src/lib/log')(module)
 
 exports.params = {
-  base: 'manager/'
+  name: 'import',
+  base: 'manager/',
+  roles: 'admin'
 }
 
 exports.buildTree = {
