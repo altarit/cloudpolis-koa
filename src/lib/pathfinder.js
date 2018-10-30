@@ -1,8 +1,8 @@
 const Router = require('koa-router')
-const { HttpError, AuthError } = require('src/lib/error/index')
+
+const { HttpError, AuthError } = require('src/lib/error')
 const checkRoles = require('../middlewares/checkRoles')
 const { addRequestValidator, addSchema} = require('../middlewares/validateRequest')
-
 const log = require('src/lib/log')(module)
 
 const controllers = [
@@ -21,6 +21,10 @@ const controllers = [
 const schemas = [
   require('./schemas/compilationsSchemas'),
   require('./schemas/librariesSchemas'),
+  require('./schemas/importSchemas'),
+  require('./schemas/importSessionsSchema'),
+  require('./schemas/authSchemas'),
+  require('./schemas/musicSchemas'),
 ]
 
 const SYSTEM_METHODS = ['params']

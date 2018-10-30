@@ -1,3 +1,16 @@
+const LIBRARY_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string'
+    },
+    created: {
+      type: 'string'
+    },
+  },
+  required: ['name', 'created']
+}
+
 exports.getLibrariesListResponse = {
   id: '/getLibrariesListResponse',
   schema: {
@@ -5,18 +18,7 @@ exports.getLibrariesListResponse = {
       libraries: {
         type: 'array',
         description: 'Libraries list.',
-        items: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string'
-            },
-            created: {
-              type: 'string'
-            },
-          },
-          required: ['name', 'created']
-        }
+        items: LIBRARY_SCHEMA
       },
     },
     required: ['libraries']
@@ -28,18 +30,7 @@ exports.getLibraryDetailsResponse = {
   id: '/getLibraryDetailsResponse',
   schema: {
     properties: {
-      library: {
-        type: 'object',
-        properties: {
-          name: {
-            type: 'string'
-          },
-          created: {
-            type: 'string'
-          },
-        },
-        required: ['name', 'created']
-      },
+      library: LIBRARY_SCHEMA,
     },
     required: ['library']
   }
@@ -47,15 +38,5 @@ exports.getLibraryDetailsResponse = {
 
 exports.createLibraryRequest = {
   id: '/createLibraryRequest',
-  schema: {
-    properties: {
-      name: {
-        type: 'string'
-      },
-      created: {
-        type: 'string'
-      },
-    },
-    required: ['name', 'created']
-  }
+  schema: LIBRARY_SCHEMA
 }
