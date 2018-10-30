@@ -1,6 +1,7 @@
 const { AuthError } = require('src/lib/error')
 const userService = require('src/services/userService')
 const tokenService = require('src/services/tokenService')
+const authSchemas = require('src/lib/schemas/authSchemas')
 const log = require('src/lib/log')(module)
 
 exports.params = {
@@ -10,17 +11,9 @@ exports.params = {
 
 exports.check = {
   path: 'hi',
-  description: 'Checks if there\'s correct non-expired and auth header and returns username.',
-  requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      }
-    },
-    required: ['username']
-  },
+  description: 'Checks if there\'s correct non-expired and auth header and returns username.',
+  responseSchema: authSchemas.checkResponse.id,
   handler: check
 }
 
@@ -39,32 +32,9 @@ async function check (ctx) {
 
 exports.login = {
   path: 'login',
-  requestSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      },
-      password: {
-        type: 'string'
-      }
-    },
-    required: ['username', 'password']
-  },
   method: 'post',
-  responseSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      },
-      access: {
-        type: 'string'
-      },
-      refresh: {
-        type: 'string'
-      }
-    },
-    required: ['username', 'access', 'refresh']
-  },
+  requestSchema: authSchemas.loginRequest.id,
+  responseSchema: authSchemas.loginResponse.id,
   handler: login
 }
 
@@ -83,38 +53,9 @@ async function login (ctx) {
 
 exports.register = {
   path: 'register',
-  requestSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      },
-      password: {
-        type: 'string'
-      },
-      email: {
-        type: 'string'
-      },
-      additional: {
-        type: 'string'
-      }
-    },
-    required: ['username', 'password', 'email']
-  },
   method: 'post',
-  responseSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      },
-      access: {
-        type: 'string'
-      },
-      refresh: {
-        type: 'string'
-      }
-    },
-    required: ['username', 'access', 'refresh']
-  },
+  requestSchema: authSchemas.registerRequest.id,
+  responseSchema: authSchemas.registerResponse.id,
   handler: register
 }
 
@@ -133,23 +74,9 @@ async function register (ctx) {
 
 exports.renewAccessToken = {
   path: 'access',
-  requestSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      }
-    },
-    required: ['username']
-  },
   method: 'post',
-  responseSchema: {
-    properties: {
-      access: {
-        type: 'string'
-      }
-    },
-    required: ['access']
-  },
+  requestSchema: authSchemas.renewAccessTokenRequest.id,
+  responseSchema: authSchemas.renewAccessTokenResponse.id,
   handler: renewAccessToken
 }
 
@@ -167,26 +94,9 @@ async function renewAccessToken (ctx) {
 
 exports.renewTokenPair = {
   path: 'pair',
-  requestSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      }
-    },
-    required: ['username']
-  },
   method: 'post',
-  responseSchema: {
-    properties: {
-      access: {
-        type: 'string'
-      },
-      refresh: {
-        type: 'string'
-      }
-    },
-    required: ['access', 'refresh']
-  },
+  requestSchema: authSchemas.renewTokenPairRequest.id,
+  responseSchema: authSchemas.renewTokenPairResponse.id,
   handler: renewTokenPair
 }
 
@@ -204,14 +114,7 @@ async function renewTokenPair (ctx) {
 
 exports.logout = {
   path: 'logout',
-  requestSchema: {
-    properties: {
-      username: {
-        type: 'string'
-      }
-    },
-    required: ['username']
-  },
+  requestSchema: authSchemas.logoutRequest.id,
   method: 'post',
   handler: logout
 }

@@ -4,6 +4,7 @@ const id3 = require('node-id3')
 const { NotFoundError } = require('src/lib/error')
 const importSessionService = require('src/services/import/importSessionService')
 const { Song, Album, Compilation, Library, ImportSession } = require('src/models')
+const { getIdString } = require('src/lib/mongoose')
 const log = require('src/lib/log')(module)
 
 module.exports.startImportSession = startImportSession
@@ -11,7 +12,7 @@ module.exports.checkProgress = checkProgress
 module.exports.extractTrackSources = extractTrackSources
 
 async function startImportSession (sessionName) {
-  const session = await ImportSession.findOne({ name: sessionName })
+  const session = await ImportSession.findOne({ id: sessionId })
   const { library: libraryName, networkPath, status, trackSources, albumSources, compilationSources, importPath } = session
   if (status !== 'READY_TO_PROCESS_METADATA' && status !== 'PROCESSING_METADATA') {
     throw new Error(`Session isn't in READY_TO_PROCESS_METADATA status.`)
@@ -19,7 +20,7 @@ async function startImportSession (sessionName) {
   session.status = 'PROCESSING_METADATA'
   await session.save()
 
-  log.debug(`Started import session ${sessionName}`)
+  log.debug(`Started import session ${sessionId}`)
   const tracks = await Promise.all(trackSources.map(async track => {
     const basename = path.basename(track.path)
     const trackPath = path.resolve(importPath, track.path)
@@ -31,11 +32,13 @@ async function startImportSession (sessionName) {
       path: networkPath + track.path.replace(/%/g, '%25').replace(/ /g, '%20')
     }
 
+    const id = getIdString()
+
     return {
-      preId: Date.now() + '',
-      importSession: sessionName,
+      id: id,
       title: fileTags.tagTitle || basename,
       library: libraryName,
+      importSession: sessionId,
       compilation: track.compilation,
       album: track.album,
       coauthors: fileTags.tagAuthors,
@@ -45,17 +48,25 @@ async function startImportSession (sessionName) {
   }))
 
   const albums = albumSources.map(album => {
+    const id = getIdString()
+
     return {
-      preId: Date.now() + '',
+      id: id,
       name: album.name,
+      library: libraryName,
+      importSession: sessionId,
       compilation: album.album,
     }
   })
 
   const compilations = compilationSources.map(compilation => {
+    const id = getIdString()
+
     return {
-      preId: Date.now() + '',
+      id: id,
       name: compilation.name,
+      library: libraryName,
+      importSession: sessionId,
     }
   })
 
@@ -65,7 +76,7 @@ async function startImportSession (sessionName) {
   await session.save()
 }
 
-async function checkProgress (sessionName) {
+async function checkProgress (sessionId) {
   const count = 100//await SongSource.count({ importSession: sessionName })
 
   return count
@@ -106,13 +117,12 @@ async function getTags (path) {
   }
 }
 
+async function extractTrackSources (sessionId) {
+  log.debug(`extractTrackSources %s`, sessionId)
 
-async function extractTrackSources (sessionName) {
-  log.debug(`extractTrackSources %s`, sessionName)
-
-  const session = await ImportSession.findOne({ name: sessionName })
+  const session = await ImportSession.findOne({ id: sessionId })
   if (!session) {
-    throw NotFoundError(`Session ${sessionName} not found.`)
+    throw NotFoundError(`Session ${sessionId} not found.`)
   }
 
   const { trackSources, albumSources, compilationSources, status, library } = session

@@ -1,4 +1,4 @@
-const { BadRequestError } = require('src/lib/error/index')
+const { BadRequestError } = require('src/lib/error')
 const validator = require('src/lib/validator')
 const log = require('src/lib/log')(module)
 
@@ -14,6 +14,7 @@ function addRequestValidator(id, requestSchema, responseSchema) {
       requestSchemaId = requestSchema
     } else if (typeof requestSchema === 'object') {
       requestSchemaId = id + '/req'
+      log.info(`[Deprecated] Schema is an object. Use string instead. %s`, requestSchemaId)
       addSchema(requestSchemaId, requestSchema)
     } else {
       throw new Error(`requestSchema neither is string  nor object`)
@@ -24,6 +25,7 @@ function addRequestValidator(id, requestSchema, responseSchema) {
       responseSchemaId = responseSchema
     } else if (typeof responseSchema === 'object') {
       responseSchemaId = id + '/res'
+      log.info(`[Deprecated] Schema is an object. Use string instead. %s`, responseSchemaId)
       addSchema(responseSchemaId, responseSchema)
     } else {
       throw new Error(`requestSchema neither is string  nor object`)

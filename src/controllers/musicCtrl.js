@@ -1,5 +1,6 @@
-const { HttpError } = require('src/lib/error/index')
+const { HttpError } = require('src/lib/error')
 const musicService = require('src/services/musicService')
+const musicSchemas = require('src/lib/schemas/musicSchemas')
 const log = require('src/lib/log')(module)
 
 exports.params = {
@@ -9,20 +10,8 @@ exports.params = {
 
 exports.search = {
   path: 'search',
-  description: '',
-  requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      artists: {
-        type: 'array',
-        items: {
-          type: 'object',
-        },
-      },
-    },
-    required: ['artists']
-  },
+  responseSchema: musicSchemas.searchResponse.id,
   handler: search
 }
 
@@ -34,20 +23,8 @@ async function search (ctx) {
 
 exports.random = {
   path: 'random',
-  description: '',
-  requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      artists: {
-        type: 'array',
-        items: {
-          type: 'object',
-        },
-      },
-    },
-    required: ['artists']
-  },
+  responseSchema: musicSchemas.randomResponse.id,
   handler: random
 }
 
@@ -66,17 +43,7 @@ exports.getTrackInfo = {
   description: '',
   requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      artists: {
-        type: 'array',
-        items: {
-          type: 'object',
-        },
-      },
-    },
-    required: ['artists']
-  },
+  responseSchema: musicSchemas.getTrackInfoResponse.id,
   handler: getTrackInfo
 }
 

@@ -1,4 +1,4 @@
-const HttpError = require('src/lib/error/index').HttpError
+const { HttpError } = require('src/lib/error')
 const log = require('src/lib/log')(module)
 
 module.exports = (nickname) => async function (ctx, next) {

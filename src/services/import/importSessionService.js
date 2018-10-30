@@ -1,5 +1,5 @@
-const { NotFoundError } = require('src/lib/error/index')
-const { Library, ImportSession } = require('src/models/index')
+const { NotFoundError } = require('src/lib/error')
+const { Library, ImportSession } = require('src/models')
 const {getIdString} = require('src/lib/mongoose')
 const log = require('src/lib/log')(module)
 
@@ -11,7 +11,7 @@ async function getImportSessionsByLibraryName (libraryName) {
   return await ImportSession
     .find({ library: libraryName }, {
       _id: 0,
-      name: 1,
+      id: 1,
       library: 1,
       importPath: 1,
       networkPath: 1,
@@ -22,10 +22,10 @@ async function getImportSessionsByLibraryName (libraryName) {
     .exec()
 }
 
-async function getImportSessionByName (sessionName) {
-  return await ImportSession.findOne({ name: sessionName }, {
+async function getImportSessionByName (sessionId) {
+  return await ImportSession.findOne({ id: sessionId }, {
     _id: 0,
-    name: 1,
+    id: 1,
     library: 1,
     importPath: 1,
     networkPath: 1,
@@ -46,7 +46,6 @@ async function createImportSession (libraryName, importPath, networkPath) {
 
   const session = new ImportSession({
     id: id,
-    name: 'm' + Date.now(),
     library: libraryName,
     importPath,
     networkPath,
@@ -54,5 +53,5 @@ async function createImportSession (libraryName, importPath, networkPath) {
   })
   await session.save()
 
-  return session.name
+  return session.id
 }

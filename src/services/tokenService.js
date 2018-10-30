@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-const { RefreshToken } = require('src/models/refreshToken')
+const { RefreshToken } = require('src/models')
 const { AuthError } = require('src/lib/error')
 const log = require('src/lib/log')(module)
 

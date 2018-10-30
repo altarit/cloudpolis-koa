@@ -1,6 +1,4 @@
-const { Compilation } = require('src/models/compilation')
-const { Song } = require('src/models/song')
-const { SongInfo } = require('src/models/songInfo')
+const { Compilation, Song, SongInfo } = require('src/models')
 const log = require('src/lib/log')(module)
 
 exports.searchTracksByQuery = searchTracksByQuery

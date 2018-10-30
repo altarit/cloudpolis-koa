@@ -10,9 +10,8 @@ exports.params = {
 
 exports.getCompilationsList = {
   path: '',
-  description: '',
-  requestSchema: {},
   method: 'get',
+  description: '',
   responseSchema: compilationsSchemas.getCompilationsListResponse.id,
   handler: getCompilationsList
 }
@@ -27,9 +26,8 @@ async function getCompilationsList (ctx) {
 
 exports.getCompilationByName = {
   path: ':libraryName/:compilationName',
-  description: '',
-  requestSchema: {},
   method: 'get',
+  description: '',
   responseSchema: compilationsSchemas.getCompilationByNameResponse.id,
   handler: getCompilationByName
 }

@@ -1,4 +1,4 @@
-const { User } = require('src/models/user')
+const { User } = require('src/models')
 const UserDto = require('src/dto/UserDto')
 const { AuthError, BadRequestError } = require('src/lib/error')
 const log = require('src/lib/log')(module)

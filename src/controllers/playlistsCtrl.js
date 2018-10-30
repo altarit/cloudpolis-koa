@@ -1,4 +1,4 @@
-const { HttpError } = require('src/lib/error/index')
+const { HttpError } = require('src/lib/error')
 const playlistService = require('src/services/playlistService')
 const log = require('src/lib/log')(module)
 

@@ -1,10 +1,5 @@
 const mongoose = require('src/lib/mongoose')
-const { Compilation } = require('src/models/compilation')
-const { Album } = require('src/models/album')
-const { Song } = require('src/models/song')
-const { SongInfo } = require('src/models/songInfo')
-const { Library } = require('src/models/library'))
-
+const { Album, Compilation, Library, Song, SongInfo } = require('src/models')
 const log = require('src/lib/log')(module)
 
 exports.createCompilationsBulk = createCompilationsBulk

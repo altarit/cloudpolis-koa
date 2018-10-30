@@ -1,4 +1,4 @@
-const { Request } = require('src/models/request')
+const { Request } = require('src/models')
 
 const log = require('src/lib/log')(module)
 

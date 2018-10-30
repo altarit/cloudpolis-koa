@@ -1,13 +1,13 @@
-const { NotFoundError } = require('src/lib/error/index')
-const { ImportSession } = require('src/models/index')
+const { NotFoundError } = require('src/lib/error')
+const { ImportSession } = require('src/models')
 const log = require('src/lib/log')(module)
 
 module.exports.confirmSession = confirmSession
 
-async function confirmSession (sessionName) {
-  const importSession = await ImportSession.findOne({ name: sessionName })
+async function confirmSession (sessionId) {
+  const importSession = await ImportSession.findOne({ id: sessionId })
   if (!importSession) {
-    throw new Error(`Import session ${sessionName} not found.`)
+    throw new Error(`Import session ${sessionId} not found.`)
   }
 
   if (importSession.status !== 'INITIALIZED') {

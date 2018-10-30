@@ -1,22 +1,22 @@
 const path = require('path')
 
-const { NotFoundError } = require('src/lib/error/index')
+const { NotFoundError } = require('src/lib/error')
 const pathService = require('src/services/pathService')
-const { ImportSession } = require('src/models/index')
+const { ImportSession } = require('src/models')
 const log = require('src/lib/log')(module)
 
 module.exports.buildImportTree = buildImportTree
 
 const MUSIC_EXTS = ['.mp3', '.aac', '.m4a']
 
-async function buildImportTree (sessionName) {
-  const importSession = await ImportSession.findOne({ name: sessionName })
+async function buildImportTree (sessionId) {
+  const importSession = await ImportSession.findOne({ id: sessionId })
   if (!importSession) {
-    throw new NotFoundError(`Import session ${sessionName} not found.`)
+    throw new NotFoundError(`Import session ${sessionId} not found.`)
   }
 
   const { library, importPath } = importSession
-  log.debug(`buildImportTree session='%s' library='%s' mainPath='%s'`, sessionName, library, importPath)
+  log.debug(`buildImportTree session='%s' library='%s' mainPath='%s'`, sessionId, library, importPath)
 
   const resultPath = path.resolve(importPath)
   const { directories: rootDirectories, files: rootFiles } = await pathService.readDirSeparated(resultPath, resultPath)
