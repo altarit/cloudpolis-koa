@@ -1,17 +1,20 @@
-const { Library } = require('./library')
-const { Album } = require('./album')
-const { Compilation } = require('./compilation')
-const { ImportSession } = require('./importSession')
-const { User } = require('./user')
-const { RefreshToken } = require('./refreshToken')
-const { Song } = require('./song')
+const { Album } = require('./Album')
+const { Compilation } = require('./Compilation')
+const { ImportSession } = require('./ImportSession')
+const { Library } = require('./Library')
+const { RefreshToken } = require('./RefreshToken')
+const { Request } = require('./Request')
+const { Song } = require('./Song')
+const { SongInfo } = require('./SongInfo')
+const { User } = require('./User')
 
 module.exports = {
-  Library,
   Album,
   Compilation,
   ImportSession,
-  User,
+  Library,
   RefreshToken,
   Song,
+  SongInfo,
+  User,
 }

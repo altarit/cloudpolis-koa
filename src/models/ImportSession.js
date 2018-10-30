@@ -7,11 +7,6 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  name: {
-    type: String,
-    required: true,
-    unique: true
-  },
   created: {
     type: Date,
     default: Date.now
