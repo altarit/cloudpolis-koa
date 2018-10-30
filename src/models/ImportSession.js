@@ -1,4 +1,5 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   // identity
@@ -50,6 +51,6 @@ const schema = new mongoose.Schema({
   compilations: {
     type: Object
   },
-})
+}, defaultOptions)
 
 exports.ImportSession = mongoose.model('ImportSession', schema)

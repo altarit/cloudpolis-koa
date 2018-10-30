@@ -2,7 +2,7 @@ const Router = require('koa-router')
 
 const { HttpError, AuthError } = require('src/lib/error')
 const checkRoles = require('../middlewares/checkRoles')
-const { addRequestValidator, addSchema} = require('../middlewares/validateRequest')
+const { addRequestValidator, addSchema} = require('./validator')
 const log = require('src/lib/log')(module)
 
 const controllers = [

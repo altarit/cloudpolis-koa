@@ -41,7 +41,6 @@ async function random (ctx) {
 exports.getTrackInfo = {
   path: 'tracks/:trackId',
   description: '',
-  requestSchema: {},
   method: 'get',
   responseSchema: musicSchemas.getTrackInfoResponse.id,
   handler: getTrackInfo

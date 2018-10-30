@@ -1,4 +1,5 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   name: {
@@ -14,7 +15,7 @@ const schema = new mongoose.Schema({
   tracks: {
     type: Object
   }
-})
+}, defaultOptions)
 
 exports.Playlist = mongoose.model('Playlist', schema)
 

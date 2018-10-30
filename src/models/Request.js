@@ -1,4 +1,5 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   created: {
@@ -38,7 +39,7 @@ const schema = new mongoose.Schema({
   response: {
     type: Object
   }
-})
+}, defaultOptions)
 
 exports.Request = mongoose.model('Request', schema)
 

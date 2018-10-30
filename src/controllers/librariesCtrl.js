@@ -10,9 +10,8 @@ exports.params = {
 
 exports.getLibrariesList = {
   path: '',
-  description: 'Returns all libraries.',
-  requestSchema: {},
   method: 'get',
+  description: 'Returns all libraries.',
   responseSchema: librariesSchemas.getLibrariesListResponse.id,
   handler: getLibrariesList
 }
@@ -27,9 +26,8 @@ async function getLibrariesList (ctx) {
 
 exports.getLibraryDetails = {
   path: ':libraryName',
-  description: 'Returns library by name.',
-  requestSchema: {},
   method: 'get',
+  description: 'Returns library by name.',
   responseSchema: librariesSchemas.getLibraryDetailsResponse.id,
   handler: getLibraryDetails
 }
@@ -49,11 +47,10 @@ async function getLibraryDetails (ctx) {
 
 exports.createLibrary = {
   path: '',
-  description: 'Create a library.',
-  requestSchema: librariesSchemas.createLibraryRequest,
   method: 'post',
+  description: 'Create a library.',
+  requestSchema: librariesSchemas.createLibraryRequest.id,
   roles: 'admin',
-  responseSchema: {},
   handler: createLibrary
 }
 
@@ -67,11 +64,9 @@ async function createLibrary (ctx) {
 
 exports.deleteLibrary = {
   path: ':libraryName',
-  description: 'Delete library.',
-  requestSchema: {},
   method: 'delete',
+  description: 'Delete library.',
   roles: 'admin',
-  responseSchema: {},
   handler: deleteLibrary
 }
 

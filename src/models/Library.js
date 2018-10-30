@@ -1,4 +1,5 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   name: {
@@ -11,6 +12,6 @@ const schema = new mongoose.Schema({
     required: true,
     default: Date.now
   },
-})
+}, defaultOptions)
 
 exports.Library = mongoose.model('Library', schema)

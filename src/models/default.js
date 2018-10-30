@@ -1,0 +1,3 @@
+exports.options = {
+  id: false,
+}

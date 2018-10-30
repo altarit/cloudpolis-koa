@@ -1,4 +1,5 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   // identity
@@ -53,7 +54,7 @@ const schema = new mongoose.Schema({
   rand: {
     type: Number
   },
-})
+}, defaultOptions)
 
 exports.Song = mongoose.model('Song', schema)
 

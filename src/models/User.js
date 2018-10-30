@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
   username: {
@@ -31,7 +32,7 @@ const schema = new mongoose.Schema({
   roles: {
     type: Object
   }
-})
+}, defaultOptions)
 
 schema.methods.encryptPassword = function (password) {
   return crypto.createHmac('sha1', this.salt).update(password).digest('hex')

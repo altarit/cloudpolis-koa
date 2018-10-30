@@ -7,7 +7,6 @@ const log = require('src/lib/log')(module)
 exports.params = {
   name: 'importSessions',
   base: 'manager/',
-  roles: 'admin'
 }
 
 exports.createImportSession = {
@@ -16,6 +15,7 @@ exports.createImportSession = {
   description: 'Creates new INITIALIZED ImportSession.',
   requestSchema: importSessionsSchema.createImportSessionRequest.id,
   responseSchema: importSessionsSchema.createImportSessionResponse.id,
+  roles: 'admin',
   handler: createImportSession
 }
 
@@ -54,6 +54,7 @@ exports.getImportSessionByName = {
   method: 'get',
   description: 'Get import sessions by name.',
   responseSchema: importSessionsSchema.getImportSessionByNameResponse.id,
+  roles: 'admin',
   handler: getImportSessionByName
 }
 
