@@ -3,6 +3,7 @@ const path = require('path')
 const { NotFoundError } = require('src/lib/error')
 const pathService = require('src/services/pathService')
 const { ImportSession } = require('src/models')
+const { IMPORT_STATUSES } = ImportSession
 const log = require('src/lib/log')(module)
 
 module.exports.buildImportTree = buildImportTree
@@ -15,8 +16,12 @@ async function buildImportTree (sessionId) {
     throw new NotFoundError(`Import session ${sessionId} not found.`)
   }
 
-  const { library, importPath } = importSession
+  const { library, importPath, status } = importSession
   log.debug(`buildImportTree session='%s' library='%s' mainPath='%s'`, sessionId, library, importPath)
+
+  if (IMPORT_STATUSES.INITIALIZED !== status) {
+    throw new Error(`Session '${sessionId}' is in ${status} status. Expected ${IMPORT_STATUSES.INITIALIZED}.`)
+  }
 
   const resultPath = path.resolve(importPath)
   const { directories: rootDirectories, files: rootFiles } = await pathService.readDirSeparated(resultPath, resultPath)
@@ -32,7 +37,9 @@ async function buildImportTree (sessionId) {
     children: childrenNodes,
     tracks: musicFiles,
   })
+
   importSession.fileTree = fileTree
+  // TOLAZY: It would be nice to check the session in database in case it has been updated.
   await importSession.save()
 
   return fileTree

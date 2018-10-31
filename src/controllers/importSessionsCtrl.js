@@ -49,16 +49,16 @@ async function getImportSessionsByLibraryName (ctx) {
   })
 }
 
-exports.getImportSessionByName = {
+exports.getImportSessionById = {
   path: 'imports/:sessionId',
   method: 'get',
   description: 'Get import sessions by name.',
-  responseSchema: importSessionsSchema.getImportSessionByNameResponse.id,
+  responseSchema: importSessionsSchema.getImportSessionByIdResponse.id,
   roles: 'admin',
-  handler: getImportSessionByName
+  handler: getImportSessionById
 }
 
-async function getImportSessionByName (ctx) {
+async function getImportSessionById (ctx) {
   const { sessionId } = ctx.params
 
   const session = await importSessionService.getImportSessionByName(sessionId)
@@ -70,3 +70,39 @@ async function getImportSessionByName (ctx) {
     session
   })
 }
+
+exports.deleteImportSessionById = {
+  path: 'imports/:sessionId/:sessionStatus',
+  method: 'delete',
+  roles: 'admin',
+  handler: deleteImportSessionById
+}
+
+async function deleteImportSessionById (ctx) {
+  const { sessionId, sessionStatus } = ctx.params
+
+  const result = await importSessionService.deleteImportSession(sessionId, sessionStatus)
+
+  ctx.end({
+    result
+  })
+}
+
+exports.forceChangeStatus = {
+  path: 'imports/:sessionId/force',
+  method: 'post',
+  roles: 'admin',
+  handler: forceChangeStatus
+}
+
+async function forceChangeStatus (ctx) {
+  const { sessionId } = ctx.params
+  const { status } = ctx.body
+
+  const session = await importSessionService.forceChangeStatus(sessionId, status)
+
+  ctx.end({
+    session
+  })
+}
+

@@ -1,5 +1,6 @@
 const { NotFoundError } = require('src/lib/error')
 const { ImportSession } = require('src/models')
+const { IMPORT_STATUSES} = ImportSession
 const log = require('src/lib/log')(module)
 
 module.exports.confirmSession = confirmSession
@@ -9,15 +10,22 @@ async function confirmSession (sessionId) {
   if (!importSession) {
     throw new Error(`Import session ${sessionId} not found.`)
   }
-
-  if (importSession.status !== 'INITIALIZED') {
+  if (importSession.status !== IMPORT_STATUSES.INITIALIZED) {
     throw new Error(`Import session status is ${importSession.status}.`)
   }
+  if (!importSession.fileTree) {
+    throw new Error(`Import session has empty fileTree.`)
+  }
 
-  const status = 'READY_TO_PROCESS_METADATA'
   const { tracks, albums, compilations } = normalizeLibraryTree(importSession.fileTree)
 
-  Object.assign(importSession, {status, trackSources: tracks, albumSources: albums, compilationSources: compilations})
+  Object.assign(importSession, {
+    status: IMPORT_STATUSES.CONFIRMED,
+    trackSources: tracks,
+    albumSources: albums,
+    compilationSources: compilations
+  })
+  // TOLAZY: It would be nice to check the session in database in case it has been updated.
   await importSession.save()
 
   return importSession

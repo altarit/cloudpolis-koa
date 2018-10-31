@@ -1,6 +1,15 @@
 const mongoose = require('src/lib/mongoose')
 const defaultOptions = require('./default').options
 
+const IMPORT_STATUSES = {
+  INITIALIZED: 'INITIALIZED',
+  CONFIRMED: 'CONFIRMED',
+  PROCESSING_METADATA: 'PROCESSING_METADATA',
+  CANCELLING_PROCESSING_METADATA: 'CANCELLING_PROCESSING_METADATA',
+  PROCESSED_METADATA: 'PROCESSED_METADATA',
+  COMPLETED: 'COMPLETED',
+}
+
 const schema = new mongoose.Schema({
   // identity
   id: {
@@ -54,3 +63,4 @@ const schema = new mongoose.Schema({
 }, defaultOptions)
 
 exports.ImportSession = mongoose.model('ImportSession', schema)
+exports.ImportSession.IMPORT_STATUSES = IMPORT_STATUSES

@@ -2,8 +2,8 @@ const path = require('path')
 const id3 = require('node-id3')
 
 const { NotFoundError } = require('src/lib/error')
-const importSessionService = require('src/services/import/importSessionService')
 const { Song, Album, Compilation, Library, ImportSession } = require('src/models')
+const { IMPORT_STATUSES } = ImportSession
 const { getIdString } = require('src/lib/mongoose')
 const log = require('src/lib/log')(module)
 
@@ -13,18 +13,48 @@ module.exports.extractTrackSources = extractTrackSources
 
 async function startImportSession (sessionId) {
   const session = await ImportSession.findOne({ id: sessionId })
-  const { library: libraryName, networkPath, status, trackSources, albumSources, compilationSources, importPath } = session
-  if (status !== 'READY_TO_PROCESS_METADATA' && status !== 'PROCESSING_METADATA') {
-    throw new Error(`Session isn't in READY_TO_PROCESS_METADATA status.`)
+
+  if (!session) {
+    throw new NotFoundError(`Not found session with id ${sessionId}`)
   }
-  session.status = 'PROCESSING_METADATA'
+
+  const { library: libraryName, networkPath, status, trackSources, albumSources, compilationSources, importPath } = session
+
+  if (status !== IMPORT_STATUSES.CONFIRMED) {
+    throw new Error(`Session is in ${status} status. Expected ${IMPORT_STATUSES.CONFIRMED}.`)
+  }
+  if (!session.trackSources) {
+    throw new Error(`Import session has empty trackSources.`)
+  }
+  if (!session.albumSources) {
+    throw new Error(`Import session has empty albumSources.`)
+  }
+  if (!session.compilationSources) {
+    throw new Error(`Import session has empty compilationSources.`)
+  }
+
+  session.status = IMPORT_STATUSES.PROCESSING_METADATA
   await session.save()
 
-  log.debug(`Started import session ${sessionId}`)
-  const tracks = await Promise.all(trackSources.map(async track => {
+  log.debug(`Started processing metadata for import session ${sessionId},`)
+  const tracks = await Promise.all(trackSources.map(async (track, i) => {
     const basename = path.basename(track.path)
     const trackPath = path.resolve(importPath, track.path)
-    console.log(`--%s / %s`, trackPath, basename)
+    log.debug(`--%s[] %s / %s`, i, trackPath, basename)
+
+    if (i > 0 && (i % 100 === 0)) {
+      const currentSession = await ImportSession.findOne({ id: sessionId })
+
+      if (currentSession.status === IMPORT_STATUSES.CANCELLING_PROCESSING_METADATA) {
+        currentSession.status = IMPORT_STATUSES.CONFIRMED
+        await currentSession.save()
+        throw new Error(`Cancelled processing metadata for session '${sessionId}'.`)
+      } else if (currentSession.status !== IMPORT_STATUSES.PROCESSING_METADATA) {
+        throw new Error(`Session ${sessionId} is in '${currentSession.status} status. Stop processing metadata.`)
+      } else {
+        log.info(`Processing metadata for %s session. Completed %s/%s tracks.`, sessionId, i, trackSources.length)
+      }
+    }
 
     const fileTags = await getTags(trackPath)
 
@@ -55,7 +85,7 @@ async function startImportSession (sessionId) {
       name: album.name,
       library: libraryName,
       importSession: sessionId,
-      compilation: album.album,
+      compilation: album.compilation,
     }
   })
 
@@ -73,18 +103,23 @@ async function startImportSession (sessionId) {
   session.trackSources = tracks
   session.albumSources = albums
   session.compilationSources = compilations
+  session.status = IMPORT_STATUSES.PROCESSED_METADATA
+  // TOLAZY: It would be nice to check the session in database in case it has been updated.
   await session.save()
 }
 
 async function checkProgress (sessionId) {
-  const count = 100//await SongSource.count({ importSession: sessionName })
-
-  return count
+  const session = await ImportSession.findOne({ id: sessionId })
+  if (!session.trackSources) {
+    throw new Error(`Import session has empty trackSources.`)
+  }
+  return {
+    completed: session.trackSources.length,
+    status: session.status,
+  }
 }
 
-
 async function getTags (path) {
-
   let tags
   try {
     tags = id3.read(path)
@@ -126,6 +161,20 @@ async function extractTrackSources (sessionId) {
   }
 
   const { trackSources, albumSources, compilationSources, status, library } = session
+
+  if (status !== IMPORT_STATUSES.PROCESSED_METADATA) {
+    throw new Error(`Session is in ${status} status. Expected ${IMPORT_STATUSES.PROCESSED_METADATA}.`)
+  }
+  if (!session.trackSources) {
+    throw new Error(`Import session has empty trackSources.`)
+  }
+  if (!session.albumSources) {
+    throw new Error(`Import session has empty albumSources.`)
+  }
+  if (!session.compilationSources) {
+    throw new Error(`Import session has empty compilationSources.`)
+  }
+
   //const songSources = [];//await SongSource.find({ importSession: importSessionId })
 
   //console.log(status, library, trackSources)
@@ -134,14 +183,15 @@ async function extractTrackSources (sessionId) {
 
   const tracks = trackSources.map(source => {
     return new Song({
-      id: /*source.id || */Math.random().toString().substring(2, 12),
+      id: source.id,
+      library: source.library,
+      importSession: sessionId,
+      compilation: source.compilation,
+      album: source.album,
+      title: source.title,
       src: source.src,
       sources: source.sources,
-      title: source.title,
       artist: source.compilation,
-      album: source.album,
-      compilation: source.compilation,
-      library: source.library,
       duration: source.duration,
       size: source.size,
       mark: source.mark,
@@ -153,19 +203,21 @@ async function extractTrackSources (sessionId) {
   log.debug(`Preparing to insert %s albums`, albumSources.length)
   const albums = albumSources.map(source => {
     return new Album({
-      id: /*source.id || */Math.random().toString().substring(2, 12),
+      id: source.id,
       name: source.name,
+      library: library,
+      importSession: sessionId,
       compilation: source.compilation,
-      library: library
     })
   })
 
   log.debug(`Preparing to insert %s compilations`, compilationSources.length)
   const compilations = compilationSources.map(source => {
     return new Compilation({
-      id: /*source.id || */Math.random().toString().substring(2, 12),
+      id: source.id,
       name: source.name,
       library: library,
+      importSession: sessionId,
     })
   })
 

@@ -1,11 +1,14 @@
 const { NotFoundError } = require('src/lib/error')
 const { Library, ImportSession } = require('src/models')
-const {getIdString} = require('src/lib/mongoose')
+const { IMPORT_STATUSES } = ImportSession
+const { getIdString } = require('src/lib/mongoose')
 const log = require('src/lib/log')(module)
 
 module.exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
 module.exports.getImportSessionByName = getImportSessionByName
 module.exports.createImportSession = createImportSession
+module.exports.deleteImportSession = deleteImportSession
+module.exports.forceChangeStatus = forceChangeStatus
 
 async function getImportSessionsByLibraryName (libraryName) {
   return await ImportSession
@@ -49,9 +52,51 @@ async function createImportSession (libraryName, importPath, networkPath) {
     library: libraryName,
     importPath,
     networkPath,
-    status: 'INITIALIZED',
+    status: IMPORT_STATUSES.INITIALIZED,
   })
   await session.save()
 
   return session.id
+}
+
+async function deleteImportSession (sessionId, sessionStatus) {
+  const session = await ImportSession.findOne({ id: sessionId })
+  if (!session) {
+    throw new NotFoundError(`Session ${sessionId} not found.`)
+  }
+
+  const { id, status } = session
+
+  if (status !== sessionStatus) {
+    throw new Error(`Expected session status: ${sessionStatus}. Actual: ${status}.`)
+  }
+  if (status === IMPORT_STATUSES.COMPLETED) {
+    throw new Error(`Doesn't support deleting ${IMPORT_STATUSES.COMPLETED} sessions. Change the status first.`)
+  }
+  // if (status === IMPORT_STATUSES.PROCESSING_METADATA) {
+  //   throw new Error(`Doesn't support deleting ${IMPORT_STATUSES.PROCESSING_METADATA} session. Change the status first.`)
+  // }
+
+  await session.delete()
+
+  return {
+    ok: true
+  }
+}
+
+async function forceChangeStatus (sessionId, sessionStatus) {
+  const session = await ImportSession.findOne({ id: sessionId })
+  if (!session) {
+    throw new NotFoundError(`Session ${sessionId} not found.`)
+  }
+
+  const newStatus = IMPORT_STATUSES[sessionStatus]
+  if (!newStatus) {
+    throw new Error(`Status ${sessionStatus} is not valid.`)
+  }
+
+  session.status = newStatus
+  await session.save()
+
+  return session
 }

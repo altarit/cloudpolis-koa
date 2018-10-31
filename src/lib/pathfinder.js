@@ -16,6 +16,7 @@ const controllers = [
   require('../controllers/homeCtrl'),
   require('../controllers/pathCtrl'),
   require('../controllers/importCtrl'),
+  require('../controllers/musicManagerCtrl'),
 ]
 
 const schemas = [

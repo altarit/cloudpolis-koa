@@ -67,8 +67,8 @@ exports.getImportSessionsByLibraryNameResponse = {
 
 }
 
-exports.getImportSessionByNameResponse = {
-  id: '/getImportSessionByNameResponse',
+exports.getImportSessionByIdResponse = {
+  id: '/getImportSessionByIdResponse',
   schema: {
     properties: {
       session: SESSION_SCHEMA

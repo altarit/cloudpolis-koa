@@ -34,7 +34,7 @@ async function buildTree (ctx) {
 exports.confirmSession = {
   path: 'imports/:sessionId/tree/confirm',
   method: 'post',
-  description: 'Changes import status from INITIALIZED to READY_TO_PROCESS_METADATA.',
+  description: 'Changes import status from INITIALIZED to CONFIRMED.',
   responseSchema: importSchemas.confirmSessionResponse.id,
   handler: confirmSession
 }

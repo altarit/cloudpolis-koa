@@ -8,16 +8,14 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  title: {
+  // hierarchy
+  library: {
     type: String,
     required: true
   },
-  // hierarchy
-  library: {
-    type: String
-  },
   importSession: {
-    type: String
+    type: String,
+    required: true
   },
   compilation: {
     type: String,
@@ -27,6 +25,10 @@ const schema = new mongoose.Schema({
     type: String
   },
   // content
+  title: {
+    type: String,
+    required: true
+  },
   src: {
     type: String,
     required: true
@@ -45,11 +47,11 @@ const schema = new mongoose.Schema({
   size: {
     type: String
   },
-  search: {
-    type: String
-  },
   mark: {
     type: Number
+  },
+  search: {
+    type: String
   },
   rand: {
     type: Number
