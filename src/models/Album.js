@@ -13,8 +13,7 @@ const schema = new mongoose.Schema({
     required: true
   },
   created: {
-    type: String,
-    required: true,
+    type: Date,
     default: Date.now
   },
   // hierarchy

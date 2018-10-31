@@ -25,6 +25,7 @@ const schemas = [
   require('./schemas/importSessionsSchema'),
   require('./schemas/authSchemas'),
   require('./schemas/musicSchemas'),
+  require('./schemas/pathSchemas'),
 ]
 
 const SYSTEM_METHODS = ['params']

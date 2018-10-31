@@ -11,7 +11,7 @@ module.exports.startImportSession = startImportSession
 module.exports.checkProgress = checkProgress
 module.exports.extractTrackSources = extractTrackSources
 
-async function startImportSession (sessionName) {
+async function startImportSession (sessionId) {
   const session = await ImportSession.findOne({ id: sessionId })
   const { library: libraryName, networkPath, status, trackSources, albumSources, compilationSources, importPath } = session
   if (status !== 'READY_TO_PROCESS_METADATA' && status !== 'PROCESSING_METADATA') {

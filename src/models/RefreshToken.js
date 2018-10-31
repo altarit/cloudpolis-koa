@@ -4,6 +4,7 @@ const defaultOptions = require('./default').options
 const schema = new mongoose.Schema({
   created: {
     type: Date,
+    required: true,
     default: Date.now
   },
   token: {

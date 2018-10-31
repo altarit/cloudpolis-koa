@@ -14,6 +14,7 @@ module.exports = {
   ImportSession,
   Library,
   RefreshToken,
+  Request,
   Song,
   SongInfo,
   User,

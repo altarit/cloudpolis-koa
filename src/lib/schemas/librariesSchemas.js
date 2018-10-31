@@ -38,5 +38,22 @@ exports.getLibraryDetailsResponse = {
 
 exports.createLibraryRequest = {
   id: '/createLibraryRequest',
-  schema: LIBRARY_SCHEMA
+  schema: {
+    properties: {
+      name: {
+        type: 'string',
+      },
+    },
+    required: ['name']
+  }
+}
+
+exports.createLibraryResponse = {
+  id: '/createLibraryResponse',
+  schema: {
+    properties: {
+      library: LIBRARY_SCHEMA,
+    },
+    required: ['library']
+  }
 }

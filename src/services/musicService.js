@@ -58,7 +58,7 @@ async function setTrackInfo (trackId, lyrics) {
 
 async function random (condition, max) {
   log.debug(`Handling /random max=${max}`)
-  const count = await Song.count(condition)
+  const count = await Song.countDocuments(condition)
   let start = Math.floor(Math.random() * count - max)
   start = start < 0 ? 0 : start
   console.log('s: ' + start + '  m: ' + max)
