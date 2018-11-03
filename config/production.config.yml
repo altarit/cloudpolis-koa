@@ -12,7 +12,7 @@ refreshToken:
   secret: refresh_replace_me
 http:
   bodyLimitInKb: 2048
-  port: 3022
+  port: 3002
   disableCache: true
   cors:
     enabled: true
@@ -21,7 +21,7 @@ logs:
   dirPath: "./logs/"
 mongoose:
   host: 127.0.0.1
-  port: 2027
+  port: 2017
   database: ''
   username: user
   password: password

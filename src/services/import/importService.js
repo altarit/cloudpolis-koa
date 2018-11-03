@@ -40,7 +40,9 @@ async function startImportSession (sessionId) {
   const tracks = await Promise.all(trackSources.map(async (track, i) => {
     const basename = path.basename(track.path)
     const trackPath = path.resolve(importPath, track.path)
-    log.debug(`--%s[] %s / %s`, i, trackPath, basename)
+    if (i % 10 === 0) {
+      log.debug(`--%s[] %s / %s`, i, trackPath, basename)
+    }
 
     if (i > 0 && (i % 100 === 0)) {
       const currentSession = await ImportSession.findOne({ id: sessionId })
@@ -100,10 +102,12 @@ async function startImportSession (sessionId) {
     }
   })
 
-  session.trackSources = tracks
-  session.albumSources = albums
-  session.compilationSources = compilations
-  session.status = IMPORT_STATUSES.PROCESSED_METADATA
+  Object.assign(session, {
+    status: IMPORT_STATUSES.PROCESSED_METADATA,
+    tracks,
+    albums,
+    compilations
+  })
   // TOLAZY: It would be nice to check the session in database in case it has been updated.
   await session.save()
 }
@@ -160,18 +164,18 @@ async function extractTrackSources (sessionId) {
     throw NotFoundError(`Session ${sessionId} not found.`)
   }
 
-  const { trackSources, albumSources, compilationSources, status, library } = session
+  const { tracks, albums, compilations, status, library } = session
 
   if (status !== IMPORT_STATUSES.PROCESSED_METADATA) {
     throw new Error(`Session is in ${status} status. Expected ${IMPORT_STATUSES.PROCESSED_METADATA}.`)
   }
-  if (!session.trackSources) {
+  if (!session.tracks) {
     throw new Error(`Import session has empty trackSources.`)
   }
-  if (!session.albumSources) {
+  if (!session.albums) {
     throw new Error(`Import session has empty albumSources.`)
   }
-  if (!session.compilationSources) {
+  if (!session.compilations) {
     throw new Error(`Import session has empty compilationSources.`)
   }
 
@@ -181,7 +185,7 @@ async function extractTrackSources (sessionId) {
 
   log.debug(`Preparing to insert %s tracks`, trackSources.length)
 
-  const tracks = trackSources.map(source => {
+  const newTracks = tracks.map(source => {
     return new Song({
       id: source.id,
       library: source.library,
@@ -201,7 +205,7 @@ async function extractTrackSources (sessionId) {
   })
 
   log.debug(`Preparing to insert %s albums`, albumSources.length)
-  const albums = albumSources.map(source => {
+  const newAlbums = albums.map(source => {
     return new Album({
       id: source.id,
       name: source.name,
@@ -212,7 +216,7 @@ async function extractTrackSources (sessionId) {
   })
 
   log.debug(`Preparing to insert %s compilations`, compilationSources.length)
-  const compilations = compilationSources.map(source => {
+  const newCompilations = compilations.map(source => {
     return new Compilation({
       id: source.id,
       name: source.name,
@@ -222,11 +226,11 @@ async function extractTrackSources (sessionId) {
   })
 
   log.debug(`Save records`)
-  await Song.insertMany(tracks)
+  await Song.insertMany(newTracks)
   log.debug(`Save albums`)
-  await Album.insertMany(albums)
+  await Album.insertMany(newAlbums)
   log.debug(`Save compilations`)
-  await Compilation.insertMany(compilations)
+  await Compilation.insertMany(newCompilations)
   log.debug(`Done`)
 
   return tracks.length

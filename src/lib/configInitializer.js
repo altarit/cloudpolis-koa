@@ -6,7 +6,7 @@ const config = require('config')
 exports.initConfig = initConfig
 exports.initConfigFile = initConfigFile
 
-function initConfig (env = 'dev') {
+function initConfig (env) {
   return initConfigFile(`config/${env}.config.yml`, 'utf8')
 }
 

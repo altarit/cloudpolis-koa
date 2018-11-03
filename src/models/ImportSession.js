@@ -37,7 +37,7 @@ const schema = new mongoose.Schema({
   networkPath: {
     type: String,
   },
-  // content
+  // starter content
   fileTree: {
     type: Object
   },
@@ -50,7 +50,7 @@ const schema = new mongoose.Schema({
   compilationSources: {
     type: Object
   },
-  // more content
+  // final content
   tracks: {
     type: Object
   },

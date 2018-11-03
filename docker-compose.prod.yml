@@ -1,0 +1,14 @@
+version: '3'
+services:
+
+  mongo:
+    image: mongo:3.6
+    container_name: database
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - "./data/mongo:/data/db"
+    ports:
+      - "2017:27017"
+    command: mongod
