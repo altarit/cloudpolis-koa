@@ -1,28 +1,46 @@
-const { HttpError } = require('src/lib/error/index')
+const { HttpError, NotFoundError } = require('src/lib/error')
 const musicService = require('src/services/musicService')
-
+const compilationsSchemas = require('src/lib/schemas/compilationsSchemas')
 const log = require('src/lib/log')(module)
 
-
-
-exports.artists = artists
-exports.getArtistByName = getArtistByName
-
-async function artists (ctx) {
-  let artists = await musicService.getAllArtists()
-  ctx.body = { data: artists }
+exports.params = {
+  name: 'compilations',
+  base: 'music/artists/'
 }
 
-async function getArtistByName (ctx) {
-  console.log('id: ' + ctx.params.library + '/' + ctx.params.name)
-  let artist = await musicService.getArtistByName(ctx.params.library, ctx.params.name)
-  if (artist) {
-    ctx.body = {
-      data: {
-        artist: artist
-      }
-    }
-  } else {
-    throw new HttpError(404, 'Artist not found')
+exports.getCompilationsList = {
+  path: '',
+  method: 'get',
+  description: '',
+  responseSchema: compilationsSchemas.getCompilationsListResponse.id,
+  handler: getCompilationsList
+}
+
+async function getCompilationsList (ctx) {
+  const artists = await musicService.getAllArtists()
+
+  ctx.end({
+    artists
+  })
+}
+
+exports.getCompilationByName = {
+  path: ':libraryName/:compilationName',
+  method: 'get',
+  description: '',
+  responseSchema: compilationsSchemas.getCompilationByNameResponse.id,
+  handler: getCompilationByName
+}
+
+async function getCompilationByName (ctx) {
+  const {libraryName, compilationName} = ctx.params
+
+  const artist = await musicService.getArtistByName(libraryName, compilationName)
+  if (!artist) {
+    throw new NotFoundError(`Compilation ${libraryName}/${compilationName} not found.`)
   }
+
+  ctx.end({
+    artist
+  })
 }

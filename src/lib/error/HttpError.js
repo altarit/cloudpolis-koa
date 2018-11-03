@@ -1,4 +1,3 @@
-const util = require('util')
 const http = require('http')
 
 class HttpError extends Error {
@@ -8,7 +7,7 @@ class HttpError extends Error {
     Error.captureStackTrace(this, this.constructor)
 
     this.status = status
-    this.message = message || http.STATUS_CODES[status] || "Error"
+    this.message = message || http.STATUS_CODES[status] || 'Error'
   }
 }
 

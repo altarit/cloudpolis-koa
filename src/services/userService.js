@@ -1,6 +1,6 @@
-const { User } = require('src/models/user')
+const { User } = require('src/models')
 const UserDto = require('src/dto/UserDto')
-const { AuthError } = require('src/lib/error')
+const { AuthError, BadRequestError } = require('src/lib/error')
 const log = require('src/lib/log')(module)
 
 exports.authorize = authorize
@@ -12,15 +12,16 @@ exports.getDetails = getDetails
 /* public methods */
 
 async function authorize (username, password) {
-  log.debug(`authorize user '%s'`, username)
+  log.debug(`Login user '%s'`, username)
   const user = await findOneByName(username)
+
   if (user) {
     if (user.checkPassword(password))
       return user
     else
-      throw new AuthError('Wrong password')
+      throw new AuthError(`Wrong password.`)
   } else {
-    throw new AuthError('There is not this username')
+    throw new AuthError(`Not found user ${username}.`)
   }
 }
 
@@ -28,23 +29,22 @@ async function register (username, password, email, additional) {
   log.debug(`authService.register() with username %s`, username)
   validateUserInfo(username, password, email, additional)
 
-  const user = await findOneByName(username)
-  if (user) {
-    throw new AuthError('Username has already taken.')
-  } else {
-    let user = new User({
-      username: username,
-      password: password,
-      email: email,
-      additional: additional
-    })
+  try {
+    const user = new User({ username, password, email, additional })
     await user.save()
+
     return new UserDto(user)
+  } catch (e) {
+    if (e.name === 'MongoError' && e.code === 11000) {
+      throw new BadRequestError(`Username has already taken.`)
+    }
+    throw e
   }
 }
 
 async function edit (username, oldPassword, newPassword, email, additional) {
-  let user = await User._findOneByName(username)
+  const user = await User._findOneByName(username)
+
   if (!user) {
     throw new AuthError('User doesn\'t exist')
   }
@@ -77,17 +77,17 @@ async function getDetails (name) {
 
 function validateUserInfo (username, password, email, additional) {
   if (!username && !/^.{1,20}$/.test(username)) {
-    throw new AuthError('Username should be shorter than 20 characters and consist of latin symbols and digits.' +
+    throw new BadRequestError('Username should be shorter than 20 characters and consist of latin symbols and digits.' +
       ' You know it, right?')
   }
   if (!password && !/^.{0,40}$/.test(password)) {
-    throw new AuthError('Password: 6-40 characters')
+    throw new BadRequestError('Password: 6-40 characters')
   }
   if (email && email.length > 60) {
-    throw new AuthError('Email should be shorter than 60 characters.')
+    throw new BadRequestError('Email should be shorter than 60 characters.')
   }
   if (additional && additional.length > 1000) {
-    throw new AuthError('Additional should be shorter than 1000 characters.')
+    throw new BadRequestError('Additional should be shorter than 1000 characters.')
   }
 }
 

@@ -1,5 +1,4 @@
-const Request = require('src/models/request').Request
-const MusicStat = require('src/models/musicStat').MusicStat
+const { Request, MusicStat } = require('src/models')
 const log = require('src/lib/log')(module)
 
 exports.index = async function (ctx, next) {

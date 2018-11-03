@@ -16,7 +16,7 @@ http:
   disableCache: true
   cors:
     enabled: true
-    origin: http://localhost:3000
+    origin: "http://localhost:3000"
 logs:
   dirPath: "./logs/"
 mongoose:

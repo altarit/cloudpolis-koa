@@ -1,10 +1,10 @@
-const util = require('util')
-const log = require('src/lib/log')(module)
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   created: {
     type: Date,
+    required: true,
     default: Date.now
   },
   token: {
@@ -16,6 +16,6 @@ let schema = new mongoose.Schema({
   isActive: {
     type: Boolean
   }
-})
+}, defaultOptions)
 
 exports.RefreshToken = mongoose.model('RefreshToken', schema)

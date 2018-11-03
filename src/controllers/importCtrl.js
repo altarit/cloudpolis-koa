@@ -1,112 +1,114 @@
-const fs = require('fs')
-const path = require('path')
-
-const importService = require('src/services/importService')
-
-const { HttpError, AuthError } = require('src/lib/error/index')
+const { HttpError } = require('src/lib/error')
+const importService = require('src/services/import/importService')
+const importSessionService = require('src/services/import/importSessionService')
+const importTreeBuilderService = require('src/services/import/importTreeBuilderService')
+const importTreeNormalizationService = require('src/services/import/importTreeNormalizationService')
+const importSchemas = require('src/lib/schemas/importSchemas')
 const log = require('src/lib/log')(module)
 
-exports.prepareImportSession = prepareImportSession
-exports.checkProgress = checkProgress
-exports.extractTrackSources = extractTrackSources
-exports.getImportSessionsByLibraryName = getImportSessionsByLibraryName
-exports.getImportSessionByName = getImportSessionByName
-exports.getTree = getTree
-exports.confirmSession = confirmSession
-
-async function checkProgress (ctx) {
-  const sessionName = ctx.params.sessionName
-
-  const count = await importService.checkProgress(sessionName)
-
-  ctx.body = {
-    data: {
-      tracksCompleted: count
-    }
-  }
+exports.params = {
+  name: 'import',
+  base: 'manager/',
+  roles: 'admin'
 }
 
-async function extractTrackSources (ctx) {
-  const sessionName = ctx.params.sessionName
-
-  const result = await importService.extractTrackSources(sessionName)
-
-  ctx.body = {
-    data: {
-      tracksCompleted: result,
-    }
-  }
+exports.buildTree = {
+  path: 'imports/:sessionId/tree',
+  method: 'post',
+  description: 'Builds file tree and stores it in the ImportSession.',
+  responseSchema: importSchemas.buildTreeResponse.id,
+  handler: buildTree
 }
 
-async function prepareImportSession (ctx) {
-  const libraryName = ctx.params.libraryName
-  const { mainPath, networkPath } = ctx.request.body
+async function buildTree (ctx) {
+  const { params } = ctx
+  const { sessionId } = params
 
-  const result = await importService.prepareImportSession(libraryName, mainPath, networkPath)
+  const fileTree = await importTreeBuilderService.buildImportTree(sessionId)
 
-  ctx.body = {
-    data: {
-      importSessionId: result
-    }
-  }
+  ctx.end({
+    fileTree
+  })
 }
 
-async function getTree (ctx) {
-  const sessionName = ctx.params.sessionName
-  const { mainPath, networkPath, libraryName } = ctx.request.body
-
-  const result = await importService.buildImportTree(sessionName, libraryName, mainPath, networkPath)
-
-  ctx.body = {
-    data: result
-  }
+exports.confirmSession = {
+  path: 'imports/:sessionId/tree/confirm',
+  method: 'post',
+  description: 'Changes import status from INITIALIZED to CONFIRMED.',
+  responseSchema: importSchemas.confirmSessionResponse.id,
+  handler: confirmSession
 }
 
 async function confirmSession (ctx) {
-  const sessionName = ctx.params.sessionName
+  const { sessionId } = ctx.params
 
-  const session = await importService.confirmSession(sessionName)
-  const { importPath, library, networkPath, status, trackSources, albumSources, compilationSources } = session
+  const session = await importTreeNormalizationService.confirmSession(sessionId)
+  const { status, trackSources, albumSources, compilationSources } = session
 
-  importService.startImportSession(sessionName, importPath, trackSources, albumSources, compilationSources, library, networkPath, session)
+  ctx.end({
+    status,
+    tracks: trackSources,
+    albums: albumSources,
+    compilations: compilationSources,
+  })
+}
+
+exports.processMetadata = {
+  path: 'imports/:sessionId/metadata',
+  method: 'post',
+  description: '',
+  responseSchema: importSchemas.processMetadataResponse.id,
+  handler: processMetadata
+}
+
+async function processMetadata (ctx) {
+  const { sessionId } = ctx.params
+
+  importService.startImportSession(sessionId)
     .then(res => {
-      log.debug(`Import session '%s' has completed`, sessionName)
+      log.debug(`Import session '%s' has completed`, sessionId)
     })
     .catch(err => {
-      log.stackTrace(`Error at import session ${sessionName}`, err)
+      log.stackTrace(`Error at import session ${sessionId}`, err)
     })
 
-  ctx.body = {
-    data: {
-      status,
-      tracks: trackSources,
-      albums: albumSources,
-      compilations: compilationSources,
-    }
-  }
+  ctx.end({
+    status: 'PROCESSING_METADATA'
+  })
 }
 
-
-async function getImportSessionsByLibraryName (ctx) {
-  const libraryName = ctx.params.libraryName
-
-  const result = await importService.getImportSessionsByLibraryName(libraryName)
-
-  ctx.body = {
-    data: {
-      sessions: result
-    }
-  }
+exports.checkProgress = {
+  path: 'imports/:sessionId/metadata/progress',
+  method: 'get',
+  description: '',
+  responseSchema: importSchemas.checkProgressResponse.id,
+  handler: checkProgress
 }
 
-async function getImportSessionByName (ctx) {
-  const sessionName = ctx.params.sessionName
+async function checkProgress (ctx) {
+  const { sessionId } = ctx.params
 
-  const result = await importService.getImportSessionByName(sessionName)
+  const count = await importService.checkProgress(sessionId)
 
-  ctx.body = {
-    data: {
-      session: result
-    }
-  }
+  ctx.end({
+    tracksCompleted: count
+  })
+}
+
+exports.extractTrackSources = {
+  path: 'imports/:sessionId/extract',
+  method: 'post',
+  description: '',
+  responseSchema: importSchemas.extractTrackSourcesResponse.id,
+  handler: extractTrackSources
+}
+
+async function extractTrackSources (ctx) {
+  const { sessionId } = ctx.params
+
+  const result = await importService.extractTrackSources(sessionId)
+
+  ctx.end({
+    tracksCompleted: result,
+  })
 }

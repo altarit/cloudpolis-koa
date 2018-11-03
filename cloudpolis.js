@@ -4,7 +4,7 @@ const bodyParser = require('koa-bodyparser')
 const router = require('koa-router')()
 const configInitializer = require('./src/lib/configInitializer')
 
-const config = configInitializer.initConfig('dev')
+const config = configInitializer.initConfig(process.env.NODE_ENV)
 const initialize = require('./src/lib/initialize')
 const findRoutes = require('./src/lib/pathfinder')
 

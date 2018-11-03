@@ -1,6 +1,7 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   created: {
     type: Date,
     default: Date.now
@@ -20,6 +21,6 @@ let schema = new mongoose.Schema({
   referer: {
     type: String
   }
-})
+}, defaultOptions)
 
 exports.MusicStat = mongoose.model('MusicStat', schema)

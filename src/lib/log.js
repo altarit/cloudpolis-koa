@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 
 const { createLogger, format, transports } = require('winston')
+const DailyRotateFile = require('winston-daily-rotate-file')
 const { combine, printf, splat } = format
 
 const config = require('config')
@@ -33,10 +34,13 @@ function getLogger (module) {
         level: (ENV === 'development') ? 'debug' : 'info',
         format: combine(splat(), myFormat(loggerName))
       }),
-      new transports.File({
+      new DailyRotateFile({
         level: (ENV === 'development') ? 'debug' : 'verbose',
         format: combine(splat(), myFormat(loggerName)),
-        filename: path.resolve(dirPath, 'cloudpolis.log')
+        filename: path.resolve(dirPath, 'cloudpolis-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD-HH',
+        maxSize: '20m',
+        maxFiles: '14d',
       })
     ]
   })

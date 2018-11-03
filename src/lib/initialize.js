@@ -1,4 +1,4 @@
-const { User } = require('src/models/user')
+const { User } = require('src/models')
 const log = require('src/lib/log')(module)
 
 module.exports = initialize

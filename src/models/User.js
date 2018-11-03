@@ -1,38 +1,39 @@
 const crypto = require('crypto')
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
-let schema = new mongoose.Schema({
-    username: {
-      type: String,
-      unique: true,
-      required: true
-    },
-    hashedPassword: {
-      type: String,
-      requred: true
-    },
-    salt: {
-      type: String,
-      requred: true
-    },
-    created: {
-      type: Date,
-      default: Date.now
-    },
-    email: {
-      type: String
-    },
-    additional: {
-      type: String
-    },
-    avatar: {
-      type: Boolean
-    },
-    roles: {
-      type: Object
-    }
+const schema = new mongoose.Schema({
+  username: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  created: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  hashedPassword: {
+    type: String,
+    required: true
+  },
+  salt: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String
+  },
+  additional: {
+    type: String
+  },
+  avatar: {
+    type: Boolean
+  },
+  roles: {
+    type: Object
   }
-)
+}, defaultOptions)
 
 schema.methods.encryptPassword = function (password) {
   return crypto.createHmac('sha1', this.salt).update(password).digest('hex')

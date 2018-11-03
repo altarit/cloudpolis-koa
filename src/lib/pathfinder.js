@@ -1,18 +1,32 @@
 const Router = require('koa-router')
-const { HttpError, AuthError } = require('src/lib/error/index')
-const checkRoles = require('../middlewares/checkRoles')
-const addRequestValidator = require('../middlewares/validateRequest')
 
+const { HttpError, AuthError } = require('src/lib/error')
+const checkRoles = require('../middlewares/checkRoles')
+const { addRequestValidator, addSchema} = require('./validator')
 const log = require('src/lib/log')(module)
 
 const controllers = [
   require('../controllers/authCtrl'),
   require('../controllers/musicCtrl'),
   require('../controllers/playlistsCtrl'),
+  require('../controllers/librariesCtrl'),
+  require('../controllers/compilationsCtrl'),
+  require('../controllers/importSessionsCtrl'),
   require('../controllers/usersCtrl'),
   require('../controllers/homeCtrl'),
   require('../controllers/pathCtrl'),
   require('../controllers/importCtrl'),
+  require('../controllers/musicManagerCtrl'),
+]
+
+const schemas = [
+  require('./schemas/compilationsSchemas'),
+  require('./schemas/librariesSchemas'),
+  require('./schemas/importSchemas'),
+  require('./schemas/importSessionsSchema'),
+  require('./schemas/authSchemas'),
+  require('./schemas/musicSchemas'),
+  require('./schemas/pathSchemas'),
 ]
 
 const SYSTEM_METHODS = ['params']
@@ -20,6 +34,14 @@ const ALLOWED_HTTP_METHODS = ['get', 'post', 'put', 'delete']
 
 function findRoutes () {
   const router = Router()
+
+  schemas.forEach(mdl => {
+    const schemaDecls = Object.keys(mdl).filter(el => !SYSTEM_METHODS.includes(el)).map(name => mdl[name])
+
+    schemaDecls.forEach(({id, schema}) => {
+      addSchema(id, schema)
+    })
+  })
 
   controllers.forEach(ctrl => {
     const ctrlPatams = ctrl.params
@@ -30,7 +52,7 @@ function findRoutes () {
       return
     }
 
-    const { base, name } = ctrlPatams
+    const { base, name, roles: controllerRoles } = ctrlPatams
 
     if (base === undefined) {
       log.warn(`Found a controller without base path. Skip handlers: %s.`, handlers)
@@ -39,7 +61,7 @@ function findRoutes () {
 
     handlers.forEach(handlerName => {
       const handlerParams = ctrl[handlerName]
-      const { path, method, handler, roles, requestSchema, responseSchema } = handlerParams
+      const { path, method, handler, roles = controllerRoles, requestSchema, responseSchema, name } = handlerParams
 
       if (!ALLOWED_HTTP_METHODS.includes(method)) {
         log.warn(`Handler %s in %s controller has incorrect method field: %s. Expected %s. Skip.`,
@@ -60,17 +82,18 @@ function findRoutes () {
       // }
 
       const url = base + path
-      const handlerId = '/' + base + handlerName
       const middlewares = []
 
       if (roles) {
         middlewares.push(checkRoles(roles))
       }
       if (requestSchema || responseSchema) {
+        const handlerId = '/' + (name || base) + handlerName
+
         middlewares.push(addRequestValidator(handlerId, requestSchema, responseSchema))
       }
 
-      log.debug(`Register path %s`, url)
+      // log.debug(`Register path %s`, url)
       router[method](url, ...middlewares, handler)
     })
 

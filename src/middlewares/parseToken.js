@@ -1,5 +1,5 @@
 const log = require('src/lib/log')(module)
-const authService = require('src/services/authService')
+const tokenService = require('src/services/tokenService')
 
 const config = require('config')
 const accessExpiresInMinutes = config.accessToken.expiresInMinutes
@@ -9,12 +9,16 @@ module.exports = parseToken
 async function parseToken (ctx, next) {
   const token = ctx.headers['auth']
   if (token) {
-    const decoded = await authService.verifyAccessToken(token)
+    const decoded = await tokenService.verifyAccessToken(token)
     if (checkAccessTokenInfo(decoded)) {
       ctx.request.user = {
         username: decoded.username
       }
+    } else {
+      ctx.set('Auth-Error', 'Invalid')
     }
+  } else {
+    ctx.set('Auth-Error', 'Empty')
   }
 
   await next()

@@ -9,7 +9,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - "mongodata:/data/db"
-      #- "./config/mongo-entrypoint/:/docker-entrypoint-initdb.d/"
     ports:
       - "2017:27017"
     command: mongod
@@ -22,7 +21,6 @@ services:
       - ./logs/nginx:/var/log/nginx
       - "F:/docs/music/mlp/My Little Pony Ost/mlpost:/docs/music/mlpost"
       - "D:/Documents/Music/MAv16/Artists:/docs/music/mlpfa"
-      #- "/home/tia/docs/music:/docs/music"
     ports:
       - "2012:80"
     command: nginx -g 'daemon off;'

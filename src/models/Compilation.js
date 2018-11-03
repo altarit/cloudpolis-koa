@@ -1,6 +1,8 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
+  // identity
   id: {
     type: String,
     required: true,
@@ -10,10 +12,20 @@ let schema = new mongoose.Schema({
     type: String,
     required: true
   },
+  created: {
+    type: Date,
+    default: Date.now
+  },
+  // hierarchy
   library: {
     type: String,
     required: true
   },
+  importSession: {
+    type: String,
+    required: true
+  },
+  // content
   songs: {
     type: Object
   },
@@ -26,10 +38,6 @@ let schema = new mongoose.Schema({
   cover: {
     type: String
   }
-})
+}, defaultOptions)
 
 exports.Compilation = mongoose.model('Compilation', schema)
-
-
-
-

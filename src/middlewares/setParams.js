@@ -4,18 +4,18 @@ const config = require('config')
 
 const { http } = config
 const { cors, disableCache } = http
-const { enabled, origin } = cors
+const { enabled: enableCors, origin } = cors
 
 module.exports = setParams
 
 async function setParams (ctx, next) {
-  if (enabled) {
+  if (enableCors) {
     ctx.set('Access-Control-Allow-Origin', origin)
     ctx.set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS')
     ctx.set('Access-Control-Allow-Credentials', true)
     ctx.set('Access-Control-Max-Age', '86400') // 24 hours
     ctx.set('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, ' +
-      'Auth, Refresh')
+      'Auth, Refresh, Auth-Error')
     if (ctx.method === 'OPTIONS') {
       ctx.status = 200
       ctx.body = 'CORS'

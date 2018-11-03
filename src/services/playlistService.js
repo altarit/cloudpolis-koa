@@ -1,6 +1,5 @@
 const mongoose = require('src/lib/mongoose')
-const Playlist = require('src/models/playlist').Playlist
-const Song = require('src/models/song').Song
+const { Playlist } = require('src/models')
 const log = require('src/lib/log')(module)
 
 

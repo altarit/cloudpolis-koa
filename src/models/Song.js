@@ -1,7 +1,15 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
 const schema = new mongoose.Schema({
-  preId: {
+  // identity
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  // hierarchy
+  library: {
     type: String,
     required: true
   },
@@ -9,29 +17,29 @@ const schema = new mongoose.Schema({
     type: String,
     required: true
   },
-  library: {
+  compilation: {
     type: String,
     required: true
-  },
-  compilation: {
-    type: String
-  },
-  title: {
-    type: String,
-    requred: true
   },
   album: {
     type: String
   },
-  coauthors: {
-    type: String
+  // content
+  title: {
+    type: String,
+    required: true
   },
   src: {
     type: String,
-    requred: true
+    required: true
   },
   sources: {
     typ: Object,
+  },
+  // other
+  artist: {
+    type: String,
+    required: true
   },
   duration: {
     type: String
@@ -39,12 +47,19 @@ const schema = new mongoose.Schema({
   size: {
     type: String
   },
-  search: {
-    type: String
-  },
   mark: {
     type: Number
   },
-})
+  search: {
+    type: String
+  },
+  rand: {
+    type: Number
+  },
+}, defaultOptions)
 
-exports.SongSource = mongoose.model('SongSource', schema)
+exports.Song = mongoose.model('Song', schema)
+
+
+
+

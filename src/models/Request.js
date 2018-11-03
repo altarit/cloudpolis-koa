@@ -1,8 +1,10 @@
 const mongoose = require('src/lib/mongoose')
+const defaultOptions = require('./default').options
 
-let schema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   created: {
     type: Date,
+    required: true,
     default: Date.now
   },
   path: {
@@ -38,7 +40,7 @@ let schema = new mongoose.Schema({
   response: {
     type: Object
   }
-})
+}, defaultOptions)
 
 exports.Request = mongoose.model('Request', schema)
 

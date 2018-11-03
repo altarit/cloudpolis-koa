@@ -29,14 +29,15 @@ module.exports = async function (ctx, next) {
       log.error(`ErrorMessage is undefined`,)
     }
 
-    const { status = 500, code = 0, message = 'Unknown error (undefined message)' } = err
+    const { status = 500, code = 0, message = 'Unknown error (undefined message)', payload } = err
 
     ctx.response.status = status
     ctx.body = {
       status,
       error: {
         code,
-        message
+        message,
+        ...payload
       }
     }
   }

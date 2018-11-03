@@ -1,34 +1,27 @@
-const { HttpError, AuthError } = require('src/lib/error/index')
+const { AuthError } = require('src/lib/error')
 const userService = require('src/services/userService')
-const authService = require('src/services/authService')
+const tokenService = require('src/services/tokenService')
+const authSchemas = require('src/lib/schemas/authSchemas')
+const log = require('src/lib/log')(module)
 
 exports.params = {
+  name: 'auth',
   base: ''
 }
 
 exports.check = {
   path: 'hi',
-  requestSchema: {},
   method: 'get',
-  responseSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      }
-    },
-    required: ['username']
-  },
+  description: 'Checks if there\'s correct non-expired and auth header and returns username.',
+  responseSchema: authSchemas.checkResponse.id,
   handler: check
 }
 
-/**
- * Checks if there's correct non-expired and auth header and returns username.
- */
 async function check (ctx) {
   const { user } = ctx.request
 
   if (!user) {
-    throw new AuthError(401, 'Not authorized')
+    throw new AuthError()
   }
 
   const { username } = user
@@ -39,27 +32,17 @@ async function check (ctx) {
 
 exports.login = {
   path: 'login',
-  requestSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      },
-      'password': {
-        'type': 'string'
-      }
-    },
-    required: ['username', 'password']
-  },
   method: 'post',
+  requestSchema: authSchemas.loginRequest.id,
+  responseSchema: authSchemas.loginResponse.id,
   handler: login
 }
 
-// TODO: handle AuthError in sendHttpError middleware
 async function login (ctx) {
   const { username = '', password = '' } = ctx.request.body
 
   const user = await userService.authorize(username, password)
-  const tokenPair = await authService.generateTokensPair(user.username)
+  const tokenPair = await tokenService.generateTokensPair(user.username)
 
   ctx.end({
     username: user.username,
@@ -70,34 +53,18 @@ async function login (ctx) {
 
 exports.register = {
   path: 'register',
-  requestSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      },
-      'password': {
-        'type': 'string'
-      },
-      'email': {
-        'type': 'string'
-      },
-      'additional': {
-        'type': 'string'
-      }
-    },
-    required: ['username', 'password', 'email']
-  },
   method: 'post',
+  requestSchema: authSchemas.registerRequest.id,
+  responseSchema: authSchemas.registerResponse.id,
   handler: register
 }
 
-// TODO: handle AuthError in sendHttpError middleware
 async function register (ctx) {
   const { username, password, email = '', additional = '' } = ctx.request.body
 
-  const user = userService.register(username.trim(), password.trim(), email.trim(), additional.trim())
+  const user = await userService.register(username.trim(), password.trim(), email.trim(), additional.trim())
+  const tokenPair = await tokenService.generateTokensPair(user.username)
 
-  const tokenPair = await authService.generateTokensPair(user.username)
   ctx.end({
     username: user.username,
     access: tokenPair.accessToken,
@@ -107,15 +74,9 @@ async function register (ctx) {
 
 exports.renewAccessToken = {
   path: 'access',
-  requestSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      }
-    },
-    required: ['username']
-  },
   method: 'post',
+  requestSchema: authSchemas.renewAccessTokenRequest.id,
+  responseSchema: authSchemas.renewAccessTokenResponse.id,
   handler: renewAccessToken
 }
 
@@ -124,25 +85,18 @@ async function renewAccessToken (ctx) {
   const { username } = body
   const refreshToken = ctx.headers['refresh']
 
-  const accessToken = await authService.renewAccessToken(username, refreshToken)
+  const accessToken = await tokenService.renewAccessToken(username, refreshToken)
+
   ctx.end({
     access: accessToken
   })
-
 }
-
 
 exports.renewTokenPair = {
   path: 'pair',
-  requestSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      }
-    },
-    required: ['username']
-  },
   method: 'post',
+  requestSchema: authSchemas.renewTokenPairRequest.id,
+  responseSchema: authSchemas.renewTokenPairResponse.id,
   handler: renewTokenPair
 }
 
@@ -151,7 +105,7 @@ async function renewTokenPair (ctx) {
   const { username } = body
   const refreshToken = ctx.headers['refresh']
 
-  const tokenPair = await authService.renewTokenPair(username, refreshToken)
+  const tokenPair = await tokenService.renewTokenPair(username, refreshToken)
   ctx.end({
     access: tokenPair.accessToken,
     refresh: tokenPair.refreshToken,
@@ -160,17 +114,7 @@ async function renewTokenPair (ctx) {
 
 exports.logout = {
   path: 'logout',
-  requestSchema: {
-    properties: {
-      'username': {
-        'type': 'string'
-      },
-      'password': {
-        'type': 'string'
-      }
-    },
-    required: ['username']
-  },
+  requestSchema: authSchemas.logoutRequest.id,
   method: 'post',
   handler: logout
 }
@@ -180,10 +124,15 @@ exports.logout = {
  *
  */
 async function logout (ctx) {
-  const { username } = ctx.request.body
+  const { user } = ctx.request
   const refreshToken = ctx.headers['refresh']
 
-  await authService.invalidateRefreshToken(username, refreshToken)
+  if (!user) {
+    throw new AuthError()
+  }
+
+  await tokenService.invalidateRefreshToken(user.username, refreshToken)
+
   ctx.end({
     success: true
   })
