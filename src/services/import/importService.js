@@ -183,7 +183,7 @@ async function extractTrackSources (sessionId) {
 
   //console.log(status, library, trackSources)
 
-  log.debug(`Preparing to insert %s tracks`, trackSources.length)
+  log.debug(`Preparing to insert %s tracks`, tracks.length)
 
   const newTracks = tracks.map(source => {
     return new Song({
@@ -204,7 +204,7 @@ async function extractTrackSources (sessionId) {
     })
   })
 
-  log.debug(`Preparing to insert %s albums`, albumSources.length)
+  log.debug(`Preparing to insert %s albums`, albums.length)
   const newAlbums = albums.map(source => {
     return new Album({
       id: source.id,
@@ -215,7 +215,7 @@ async function extractTrackSources (sessionId) {
     })
   })
 
-  log.debug(`Preparing to insert %s compilations`, compilationSources.length)
+  log.debug(`Preparing to insert %s compilations`, compilations.length)
   const newCompilations = compilations.map(source => {
     return new Compilation({
       id: source.id,
