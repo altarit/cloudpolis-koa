@@ -20,6 +20,7 @@ services:
       - ./config/dev.nginx.conf:/etc/nginx/nginx.conf
       - ./logs/nginx:/var/log/nginx
       - "F:/docs/music/mlp/My Little Pony Ost/mlpost:/docs/music/mlpost"
+      - "F:/docs/music/mlp/My Little Pony Ost/temp:/docs/music/temp"
       - "D:/Documents/Music/MAv16/Artists:/docs/music/mlpfa"
     ports:
       - "2012:80"
