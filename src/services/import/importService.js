@@ -67,7 +67,7 @@ async function startImportSession (sessionId) {
     const id = getIdString()
 
     return {
-      id: id,
+      id,
       title: fileTags.tagTitle || basename,
       library: libraryName,
       importSession: sessionId,
@@ -83,7 +83,7 @@ async function startImportSession (sessionId) {
     const id = getIdString()
 
     return {
-      id: id,
+      id,
       name: album.name,
       library: libraryName,
       importSession: sessionId,
@@ -95,7 +95,7 @@ async function startImportSession (sessionId) {
     const id = getIdString()
 
     return {
-      id: id,
+      id,
       name: compilation.name,
       library: libraryName,
       importSession: sessionId,
@@ -164,7 +164,10 @@ async function extractTrackSources (sessionId) {
     throw NotFoundError(`Session ${sessionId} not found.`)
   }
 
-  const { tracks, albums, compilations, status, library } = session
+  const { status, library } = session
+  const tracks = [...session.tracks]
+  const albums = [...session.albums]
+  const compilations = [...session.compilations]
 
   if (status !== IMPORT_STATUSES.PROCESSED_METADATA) {
     throw new Error(`Session is in ${status} status. Expected ${IMPORT_STATUSES.PROCESSED_METADATA}.`)
@@ -183,9 +186,9 @@ async function extractTrackSources (sessionId) {
 
   //console.log(status, library, trackSources)
 
-  log.debug(`Preparing to insert %s tracks`, trackSources.length)
+  log.debug(`Preparing to insert %s tracks`, tracks.length)
 
-  const newTracks = tracks.map(source => {
+  const newTracks = tracks.map(async source => {
     return new Song({
       id: source.id,
       library: source.library,
@@ -204,8 +207,9 @@ async function extractTrackSources (sessionId) {
     })
   })
 
-  log.debug(`Preparing to insert %s albums`, albumSources.length)
-  const newAlbums = albums.map(source => {
+  log.debug(`Preparing to insert %s albums`, albums.length)
+  const newAlbums = albums.map(async source => {
+    //const found = Album.findOne({ library, compilation: source.compilation })
     return new Album({
       id: source.id,
       name: source.name,
@@ -215,22 +219,44 @@ async function extractTrackSources (sessionId) {
     })
   })
 
-  log.debug(`Preparing to insert %s compilations`, compilationSources.length)
-  const newCompilations = compilations.map(source => {
-    return new Compilation({
-      id: source.id,
-      name: source.name,
-      library: library,
-      importSession: sessionId,
-    })
+  log.debug(`Preparing to insert %s compilations`, compilations.length)
+  const newCompilations = compilations.map(async source => {
+    const result = await Compilation.findOne({ library, name: source.name })
+
+    if (!result) {
+      return new Compilation({
+        id: source.id,
+        name: source.name,
+        library: library,
+        importSession: [sessionId],
+      })
+    } else {
+      source.id = result.id
+      if (!result.importSession.includes(sessionId)) {
+        result.importSession = [...result.importSession, sessionId]
+      }
+      return result
+    }
   })
 
+
   log.debug(`Save records`)
-  await Song.insertMany(newTracks)
+  await Promise.all(newTracks)
+    .then(arr => Promise.all(arr.map(track => track.save())))
+  //await Song.insertMany(newTracks)
   log.debug(`Save albums`)
-  await Album.insertMany(newAlbums)
+  await Promise.all(newAlbums)
+    .then(arr => Promise.all(arr.map(album => album.save())))
+  //await Album.insertMany(newAlbums)
   log.debug(`Save compilations`)
-  await Compilation.insertMany(newCompilations)
+  await Promise.all(newCompilations)
+    .then(arr => arr)
+    .then(arr => Promise.all(arr.map(compilation => compilation.save())))
+
+  session.tracks = tracks
+  session.albums = albums
+  session.compilations = compilations
+  await session.save()
   log.debug(`Done`)
 
   return tracks.length

@@ -22,7 +22,7 @@ const schema = new mongoose.Schema({
     required: true
   },
   importSession: {
-    type: String,
+    type: Object,
     required: true
   },
   // content
